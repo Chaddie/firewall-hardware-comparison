@@ -1,6 +1,13 @@
 from flask import Blueprint, jsonify, render_template
 
-from .data import FEATURE_COMPARISON, HARDWARE_TIERS, TAKEAWAYS, VENDORS
+from .data import (
+    FEATURE_COMPARISON,
+    HARDWARE_TIERS,
+    HEALTHCHECK_DATA,
+    TAKEAWAYS,
+    TAKEDOWN_DATA,
+    VENDORS,
+)
 
 main = Blueprint("main", __name__)
 
@@ -35,3 +42,13 @@ def api_features():
 @main.route("/api/takeaways")
 def api_takeaways():
     return jsonify(TAKEAWAYS)
+
+
+@main.route("/api/healthcheck")
+def api_healthcheck():
+    return jsonify(HEALTHCHECK_DATA)
+
+
+@main.route("/api/takedown")
+def api_takedown():
+    return jsonify(TAKEDOWN_DATA)

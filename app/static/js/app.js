@@ -5,8 +5,15 @@ const state = {
   hardware: {},
   features: {},
   takeaways: [],
+  healthcheck: { questions: [] },
+  takedown: { sophos_strengths: [], vendor_comparisons: {} },
   activeVendors: new Set(),
   activeTab: "overview",
+  hcAnswers: {},
+  hcStep: 0,
+  hcDone: false,
+  hcReportView: "exec",
+  tdSelectedVendor: null,
 };
 
 // ── Bootstrap ──
@@ -18,21 +25,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderHardwareTiers();
   renderFeatures();
   renderTakeaways();
+  renderHealthCheckStart();
+  renderTakedownPage();
   initChat();
   showTab("overview");
 });
 
 async function loadData() {
-  const [vendors, hardware, features, takeaways] = await Promise.all([
+  const [vendors, hardware, features, takeaways, healthcheck, takedown] = await Promise.all([
     fetch("/api/vendors").then((r) => r.json()),
     fetch("/api/hardware").then((r) => r.json()),
     fetch("/api/features").then((r) => r.json()),
     fetch("/api/takeaways").then((r) => r.json()),
+    fetch("/api/healthcheck").then((r) => r.json()),
+    fetch("/api/takedown").then((r) => r.json()),
   ]);
   state.vendors = vendors;
   state.hardware = hardware;
   state.features = features;
   state.takeaways = takeaways;
+  state.healthcheck = healthcheck;
+  state.takedown = takedown;
   Object.keys(vendors).forEach((v) => state.activeVendors.add(v));
 }
 
@@ -238,6 +251,292 @@ function renderTakeaways() {
     });
     grid.appendChild(card);
   }
+}
+
+// ══════════════════════════════════════
+// HEALTH CHECK WIZARD
+// ══════════════════════════════════════
+
+function renderHealthCheckStart() {
+  const container = document.getElementById("hc-wizard");
+  state.hcAnswers = {};
+  state.hcStep = 0;
+  state.hcDone = false;
+
+  container.innerHTML = `
+    <div class="wizard-start">
+      <p>This wizard walks through ${state.healthcheck.questions.length} key areas of firewall best practice.
+         Answer each question honestly and receive a tailored report with executive-level justifications
+         and detailed technical remediation steps linked to Sophos documentation.</p>
+      <button class="btn-primary" id="hc-start-btn">Start Health Check</button>
+    </div>
+  `;
+
+  document.getElementById("hc-start-btn").addEventListener("click", () => {
+    state.hcStep = 0;
+    state.hcAnswers = {};
+    renderWizardStep();
+  });
+}
+
+function renderWizardStep() {
+  const container = document.getElementById("hc-wizard");
+  const questions = state.healthcheck.questions;
+  const q = questions[state.hcStep];
+  const total = questions.length;
+  const pct = ((state.hcStep) / total) * 100;
+
+  container.innerHTML = `
+    <div class="wizard-container">
+      <div class="wizard-progress">
+        <div class="wizard-progress-header">
+          <span>Step ${state.hcStep + 1} of ${total}</span>
+          <strong>${Math.round(pct)}%</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="wizard-question-card">
+        <div class="wizard-category">${q.category}</div>
+        <h3>${q.question}</h3>
+        <p class="wizard-context">${q.context}</p>
+        <div class="wizard-answers">
+          <button class="btn-yes" data-answer="yes">Yes</button>
+          <button class="btn-no" data-answer="no">No</button>
+          <button class="btn-na" data-answer="na">N/A</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.querySelectorAll(".wizard-answers button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.hcAnswers[q.id] = btn.dataset.answer;
+      if (state.hcStep < total - 1) {
+        state.hcStep++;
+        renderWizardStep();
+      } else {
+        state.hcDone = true;
+        renderHealthCheckReport();
+      }
+    });
+  });
+}
+
+function renderHealthCheckReport() {
+  const container = document.getElementById("hc-wizard");
+  const questions = state.healthcheck.questions;
+
+  const gaps = questions.filter(
+    (q) => state.hcAnswers[q.id] === "no"
+  );
+  const answered = questions.filter((q) => state.hcAnswers[q.id] !== "na");
+  const passed = answered.filter((q) => state.hcAnswers[q.id] === "yes");
+  const score = answered.length > 0 ? Math.round((passed.length / answered.length) * 100) : 100;
+
+  const severityOrder = { critical: 0, high: 1, medium: 2 };
+  gaps.sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
+
+  let gradeClass, gradeText, ringClass;
+  if (score >= 90) { gradeClass = "grade-perfect"; gradeText = "Excellent"; ringClass = "fill-perfect"; }
+  else if (score >= 70) { gradeClass = "grade-good"; gradeText = "Good"; ringClass = "fill-good"; }
+  else if (score >= 50) { gradeClass = "grade-warning"; gradeText = "Needs Work"; ringClass = "fill-warning"; }
+  else { gradeClass = "grade-critical"; gradeText = "Critical"; ringClass = "fill-critical"; }
+
+  const circumference = 2 * Math.PI * 65;
+  const dashOffset = circumference - (score / 100) * circumference;
+
+  let html = `<div class="report-container"><div class="wizard-container">`;
+
+  html += `
+    <div class="score-section">
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="track" cx="80" cy="80" r="65"/>
+          <circle class="${ringClass}" cx="80" cy="80" r="65"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${dashOffset}"
+            stroke-linecap="round"/>
+        </svg>
+        <div class="score-label">
+          <div class="score-num">${score}%</div>
+          <div class="score-den">${passed.length}/${answered.length} passed</div>
+        </div>
+      </div>
+      <div class="score-grade ${gradeClass}">${gradeText}</div>
+    </div>
+  `;
+
+  if (gaps.length === 0) {
+    html += `
+      <div class="all-clear">
+        <h3>All checks passed!</h3>
+        <p>Your firewall configuration follows all assessed best practices. Keep it up.</p>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="report-toggle">
+        <button class="${state.hcReportView === 'exec' ? 'active' : ''}" data-view="exec">Executive Summary</button>
+        <button class="${state.hcReportView === 'tech' ? 'active' : ''}" data-view="tech">Technical Details</button>
+      </div>
+    `;
+
+    if (state.hcReportView === "exec") {
+      html += `<div class="exec-cards">`;
+      for (const g of gaps) {
+        html += `
+          <div class="exec-card">
+            <div class="severity-bar severity-${g.severity}"></div>
+            <div class="exec-card-body">
+              <h4>${g.category}</h4>
+              <span class="severity-tag tag-${g.severity}">${g.severity}</span>
+              <p>${g.exec_summary}</p>
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    } else {
+      html += `<div class="tech-accordion">`;
+      for (const g of gaps) {
+        html += `
+          <div class="tech-item">
+            <div class="tech-item-header">
+              <h4>
+                <span class="severity-tag tag-${g.severity}">${g.severity}</span>
+                ${g.category}
+              </h4>
+              <span class="chevron">&#x25BC;</span>
+            </div>
+            <div class="tech-item-body">
+              <p>${g.tech_detail}</p>
+              <a class="doc-link" href="${g.sophos_doc_url}" target="_blank" rel="noopener">
+                &#x1F4D6; ${g.sophos_doc_title}
+              </a>
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    }
+  }
+
+  html += `
+    <div style="text-align:center;margin-top:2rem">
+      <button class="btn-primary" id="hc-restart-btn">Restart Health Check</button>
+    </div>
+  `;
+  html += `</div></div>`;
+
+  container.innerHTML = html;
+
+  container.querySelectorAll(".report-toggle button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.hcReportView = btn.dataset.view;
+      renderHealthCheckReport();
+    });
+  });
+
+  container.querySelectorAll(".tech-item-header").forEach((header) => {
+    header.addEventListener("click", () => {
+      header.parentElement.classList.toggle("open");
+    });
+  });
+
+  document.getElementById("hc-restart-btn")?.addEventListener("click", () => {
+    renderHealthCheckStart();
+  });
+}
+
+// ══════════════════════════════════════
+// COMPETITIVE TAKEDOWN
+// ══════════════════════════════════════
+
+function renderTakedownPage() {
+  renderTakedownStrengths();
+  renderTakedownCompare();
+}
+
+function renderTakedownStrengths() {
+  const container = document.getElementById("td-strengths");
+  const strengths = state.takedown.sophos_strengths;
+
+  let html = `<h3 class="strengths-header">Sophos Differentiators</h3>`;
+  html += `<div class="strengths-grid">`;
+  for (const s of strengths) {
+    html += `
+      <div class="strength-card">
+        <div class="strength-cat">${s.category}</div>
+        <h4>${s.title}</h4>
+        <p>${s.description}</p>
+      </div>
+    `;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function renderTakedownCompare() {
+  const container = document.getElementById("td-compare");
+  const comparisons = state.takedown.vendor_comparisons;
+  const vendorKeys = Object.keys(comparisons);
+
+  let html = `
+    <div class="vendor-picker-section">
+      <div class="vendor-picker-label">Compare Sophos vs...</div>
+      <div class="vendor-picker-chips">
+  `;
+
+  for (const key of vendorKeys) {
+    const v = state.vendors[key];
+    if (!v) continue;
+    const isActive = state.tdSelectedVendor === key;
+    html += `<button class="td-chip ${isActive ? 'active' : ''}" data-td-vendor="${key}">
+      <span class="dot" style="background:${v.color};width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px"></span>
+      ${v.name.split("(")[0].trim()}
+    </button>`;
+  }
+  html += `</div>`;
+
+  if (state.tdSelectedVendor && comparisons[state.tdSelectedVendor]) {
+    const items = comparisons[state.tdSelectedVendor];
+    const compVendor = state.vendors[state.tdSelectedVendor];
+
+    html += `<div class="compare-cards">`;
+    for (const item of items) {
+      html += `
+        <div class="compare-card">
+          <div class="compare-card-header">${item.category}</div>
+          <div class="compare-card-body">
+            <div class="compare-col">
+              <div class="compare-col-label sophos-label">Sophos</div>
+              ${item.sophos_position}
+            </div>
+            <div class="compare-col">
+              <div class="compare-col-label competitor-label">${compVendor.name.split("(")[0].trim()}</div>
+              ${item.competitor_position}
+            </div>
+          </div>
+          <div class="compare-verdict">${item.verdict}</div>
+        </div>
+      `;
+    }
+    html += `</div>`;
+  } else {
+    html += `<div class="td-empty">Select a vendor above to see a detailed head-to-head comparison.</div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  container.querySelectorAll(".td-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.tdSelectedVendor = chip.dataset.tdVendor;
+      renderTakedownCompare();
+    });
+  });
 }
 
 // ── AI Chat ──
