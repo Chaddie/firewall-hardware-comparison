@@ -1,4 +1,4 @@
-/* Firewall Comparison Web App */
+/* Sophos Networking Portfolio Sales Toolkit */
 
 const state = {
   vendors: {},
@@ -22,14 +22,21 @@ const state = {
   discGuidedDone: false,
   licensing: { bundles: [], a_la_carte: [], bundle_comparison: [] },
   haGuide: {},
+  verticals: { verticals: [] },
+  vertSelectedKey: null,
+  solutionMap: { questions: [], recommendations: {} },
+  smStep: 0,
+  smAnswers: {},
+  smDone: false,
 };
 
 // ── Bootstrap ──
 document.addEventListener("DOMContentLoaded", async () => {
+  initTheme();
   await loadData();
   initNav();
   initVendorFilters();
-  renderOverview();
+  renderOverviewHub();
   renderHardwareTiers();
   renderFeatures();
   renderTakeaways();
@@ -38,12 +45,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderDiscoveryPage();
   renderLicensingPage();
   renderHAGuidePage();
+  renderVerticalsPage();
+  renderSolutionMapPage();
   initChat();
   showTab("overview");
 });
 
+// ── Theme toggle ──
+function initTheme() {
+  const saved = localStorage.getItem("theme");
+  if (saved) document.documentElement.dataset.theme = saved;
+  const btn = document.getElementById("theme-toggle");
+  btn.addEventListener("click", () => {
+    const current = document.documentElement.dataset.theme;
+    const next = current === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("theme", next);
+  });
+}
+
 async function loadData() {
-  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide] = await Promise.all([
+  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide, verticals, solutionMap] = await Promise.all([
     fetch("/api/vendors").then((r) => r.json()),
     fetch("/api/hardware").then((r) => r.json()),
     fetch("/api/features").then((r) => r.json()),
@@ -53,6 +75,8 @@ async function loadData() {
     fetch("/api/discovery").then((r) => r.json()),
     fetch("/api/licensing").then((r) => r.json()),
     fetch("/api/ha-guide").then((r) => r.json()),
+    fetch("/api/verticals").then((r) => r.json()),
+    fetch("/api/solution-map").then((r) => r.json()),
   ]);
   state.vendors = vendors;
   state.hardware = hardware;
@@ -63,6 +87,8 @@ async function loadData() {
   state.discovery = discovery;
   state.licensing = licensing;
   state.haGuide = haGuide;
+  state.verticals = verticals;
+  state.solutionMap = solutionMap;
   Object.keys(vendors).forEach((v) => state.activeVendors.add(v));
 }
 
@@ -146,22 +172,48 @@ function applyFilters() {
   });
 }
 
-// ── Overview cards ──
-function renderOverview() {
-  const grid = document.querySelector("#section-overview .card-grid");
-  grid.innerHTML = "";
-  for (const [key, v] of Object.entries(state.vendors)) {
-    const card = el("div", {
-      className: "card",
-      dataset: { vendorId: key },
-      innerHTML: `
-        <h3><span class="dot" style="background:${v.color}"></span>${v.name}</h3>
-        <p>${v.description}</p>
-        <ul>${v.highlights.map((h) => `<li>${h}</li>`).join("")}</ul>
-      `,
-    });
-    grid.appendChild(card);
+// ── Overview Hub ──
+function renderOverviewHub() {
+  const container = document.getElementById("overview-hub");
+  if (!container) return;
+
+  const sections = [
+    { tab: "hardware", icon: "\uD83D\uDCBB", title: "Hardware Specs", desc: "Side-by-side hardware comparison across all major firewall vendors." },
+    { tab: "features", icon: "\uD83D\uDD0D", title: "Feature Comparison", desc: "Architecture, processing, management, and ecosystem integration at a glance." },
+    { tab: "takeaways", icon: "\uD83D\uDCA1", title: "Key Takeaways", desc: "Quick-reference insights for choosing the right vendor and model." },
+    { tab: "healthcheck", icon: "\u2705", title: "Firewall Health Check", desc: "Interactive wizard with executive and technical reports, plus PDF export." },
+    { tab: "takedown", icon: "\uD83E\uDD4A", title: "Why Sophos", desc: "Head-to-head competitive positioning against every major rival." },
+    { tab: "discovery", icon: "\uD83D\uDD0E", title: "Sales Discovery", desc: "Guided questions across the full Sophos networking portfolio." },
+    { tab: "licensing", icon: "\uD83D\uDCDC", title: "Licensing Breakdown", desc: "Standard vs Xstream bundles, individual subs, and a la carte options." },
+    { tab: "ha-guide", icon: "\u26A1", title: "HA Quoting Guide", desc: "Why Enhanced Support Plus matters and how to quote HA correctly." },
+    { tab: "verticals", icon: "\uD83C\uDFEB", title: "Industry Verticals", desc: "Tailored Sophos positioning for education, finance, healthcare, and more." },
+    { tab: "solution-map", icon: "\uD83D\uDDFA\uFE0F", title: "Solution Map", desc: "Build a recommended Sophos solution based on customer requirements." },
+  ];
+
+  let html = `
+    <div class="hub-welcome">
+      <h2>Welcome to the Sophos Sales Toolkit</h2>
+      <p>Everything you need to position, sell, and configure Sophos networking solutions. Pick a section below to get started.</p>
+    </div>
+    <div class="hub-grid">
+  `;
+
+  for (const s of sections) {
+    html += `
+      <div class="hub-card" data-hub-tab="${s.tab}">
+        <div class="hub-icon">${s.icon}</div>
+        <h3>${s.title}</h3>
+        <p>${s.desc}</p>
+      </div>
+    `;
   }
+  html += "</div>";
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-hub-tab]").forEach((card) => {
+    card.addEventListener("click", () => showTab(card.dataset.hubTab));
+  });
 }
 
 // ── Hardware tier tables ──
@@ -441,7 +493,8 @@ function renderHealthCheckReport() {
   }
 
   html += `
-    <div style="text-align:center;margin-top:2rem">
+    <div style="text-align:center;margin-top:2rem;display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap">
+      <button class="btn-pdf" id="hc-pdf-btn">&#128196; Download PDF Report</button>
       <button class="btn-primary" id="hc-restart-btn">Restart Health Check</button>
     </div>
   `;
@@ -465,6 +518,95 @@ function renderHealthCheckReport() {
   document.getElementById("hc-restart-btn")?.addEventListener("click", () => {
     renderHealthCheckStart();
   });
+
+  document.getElementById("hc-pdf-btn")?.addEventListener("click", () => {
+    generateHealthCheckPDF(gaps, score, gradeText, passed, answered);
+  });
+}
+
+function generateHealthCheckPDF(gaps, score, gradeText, passed, answered) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const pageW = doc.internal.pageSize.getWidth();
+  let y = 20;
+
+  doc.setFillColor(0, 91, 172);
+  doc.rect(0, 0, pageW, 35, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont(undefined, "bold");
+  doc.text("Sophos Firewall Health Check Report", 14, 16);
+  doc.setFontSize(10);
+  doc.setFont(undefined, "normal");
+  doc.text(new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }), 14, 26);
+  doc.text(`Score: ${score}% (${gradeText}) \u2014 ${passed.length}/${answered.length} checks passed`, 14, 32);
+
+  y = 45;
+  doc.setTextColor(0, 0, 0);
+
+  if (gaps.length === 0) {
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.text("All checks passed!", 14, y);
+    y += 10;
+    doc.setFontSize(10);
+    doc.setFont(undefined, "normal");
+    doc.text("Your firewall configuration follows all assessed best practices.", 14, y);
+  } else {
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.text("Executive Summary", 14, y);
+    y += 8;
+
+    for (const g of gaps) {
+      if (y > 270) { doc.addPage(); y = 20; }
+      const sevColor = g.severity === "critical" ? [214, 48, 49] : g.severity === "high" ? [224, 120, 0] : [0, 91, 172];
+      doc.setFillColor(...sevColor);
+      doc.rect(14, y - 3, 3, 18, "F");
+
+      doc.setFontSize(11);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${g.category}  [${g.severity.toUpperCase()}]`, 20, y + 2);
+      doc.setFontSize(9);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(80, 80, 80);
+      const lines = doc.splitTextToSize(g.exec_summary, pageW - 34);
+      doc.text(lines, 20, y + 9);
+      y += 14 + lines.length * 4.5;
+    }
+
+    if (y > 240) { doc.addPage(); y = 20; }
+    y += 6;
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Technical Details & Remediation", 14, y);
+    y += 8;
+
+    for (const g of gaps) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFontSize(11);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(0, 91, 172);
+      doc.text(g.category, 14, y);
+      y += 6;
+
+      doc.setFontSize(9);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(60, 60, 60);
+      const techLines = doc.splitTextToSize(g.tech_detail, pageW - 28);
+      doc.text(techLines, 14, y);
+      y += techLines.length * 4.5 + 2;
+
+      doc.setTextColor(0, 91, 172);
+      doc.textWithLink(g.sophos_doc_title, 14, y, { url: g.sophos_doc_url });
+      y += 10;
+      doc.setTextColor(0, 0, 0);
+    }
+  }
+
+  doc.save("Sophos_Firewall_HealthCheck_Report.pdf");
 }
 
 // ══════════════════════════════════════
@@ -958,6 +1100,276 @@ function renderHAGuidePage() {
   }
 
   c.innerHTML = html;
+}
+
+// ══════════════════════════════════════
+// INDUSTRY VERTICALS
+// ══════════════════════════════════════
+
+function renderVerticalsPage() {
+  const container = document.getElementById("verticals-container");
+  if (!container) return;
+  const verts = state.verticals.verticals || [];
+
+  let html = '<div class="vert-picker">';
+  for (const v of verts) {
+    const active = state.vertSelectedKey === v.key ? "active" : "";
+    html += `<button class="vert-chip ${active}" data-vert-key="${v.key}">
+      <span class="vert-icon">${v.icon}</span> ${v.name}
+    </button>`;
+  }
+  html += "</div>";
+
+  const selected = verts.find((v) => v.key === state.vertSelectedKey);
+  if (selected) {
+    html += '<div class="vert-detail">';
+    html += `<div class="vert-detail-header">
+      <h3>${selected.icon} ${selected.name}</h3>
+      <p>${selected.description}</p>
+    </div>`;
+
+    html += '<div class="vert-reqs"><h4>Key Requirements & Sophos Solutions</h4><div class="vert-reqs-grid">';
+    for (const req of selected.requirements) {
+      html += `<div class="vert-req-card">
+        <h5>${req.title}</h5>
+        <p>${req.description}</p>
+        <div class="vert-solution">${req.sophos_solution}</div>
+      </div>`;
+    }
+    html += "</div></div>";
+
+    html += '<div class="vert-talks"><h4>Sales Talk Points</h4><ul>';
+    for (const tp of selected.talk_points) {
+      html += `<li>${tp}</li>`;
+    }
+    html += "</ul></div>";
+
+    html += "</div>";
+  } else {
+    html += '<div class="vert-empty">Select an industry above to see tailored Sophos positioning.</div>';
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-vert-key]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.vertSelectedKey = chip.dataset.vertKey;
+      renderVerticalsPage();
+    });
+  });
+}
+
+// ══════════════════════════════════════
+// SOLUTION MAP WIZARD
+// ══════════════════════════════════════
+
+function renderSolutionMapPage() {
+  const container = document.getElementById("solution-map-container");
+  if (!container) return;
+
+  if (state.smDone) {
+    renderSolutionSummary(container);
+    return;
+  }
+
+  const questions = state.solutionMap.questions || [];
+  if (questions.length === 0) return;
+
+  const q = questions[state.smStep];
+  const total = questions.length;
+  const pct = (state.smStep / total) * 100;
+  const currentAnswer = state.smAnswers[q.id] || null;
+
+  let html = '<div class="smap-container">';
+  html += `
+    <div class="wizard-progress" style="margin-bottom:1.5rem">
+      <div class="wizard-progress-header">
+        <span>Step ${state.smStep + 1} of ${total}</span>
+        <strong>${Math.round(pct)}%</strong>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%"></div>
+      </div>
+    </div>
+  `;
+
+  html += `<div class="smap-step">
+    <h3>${q.question}</h3>
+    <p>${q.context}</p>
+    <div class="smap-options">`;
+  for (const opt of q.options) {
+    const sel = currentAnswer === opt.value ? "selected" : "";
+    html += `<button class="smap-option ${sel}" data-smap-val="${opt.value}">${opt.label}</button>`;
+  }
+  html += "</div>";
+
+  html += '<div class="smap-nav">';
+  if (state.smStep > 0) {
+    html += '<button class="btn-primary" style="background:var(--surface-alt);color:var(--text);border:1px solid var(--border)" data-smap-prev>\u2190 Back</button>';
+  }
+  if (currentAnswer) {
+    if (state.smStep < total - 1) {
+      html += '<button class="btn-primary" data-smap-next>Next \u2192</button>';
+    } else {
+      html += '<button class="btn-primary" data-smap-finish>See Recommendations \u2192</button>';
+    }
+  }
+  html += "</div></div></div>";
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-smap-val]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.smAnswers[q.id] = btn.dataset.smapVal;
+      renderSolutionMapPage();
+    });
+  });
+
+  container.querySelector("[data-smap-prev]")?.addEventListener("click", () => {
+    if (state.smStep > 0) { state.smStep--; renderSolutionMapPage(); }
+  });
+
+  container.querySelector("[data-smap-next]")?.addEventListener("click", () => {
+    state.smStep++;
+    renderSolutionMapPage();
+  });
+
+  container.querySelector("[data-smap-finish]")?.addEventListener("click", () => {
+    state.smDone = true;
+    renderSolutionMapPage();
+  });
+}
+
+function renderSolutionSummary(container) {
+  const a = state.smAnswers;
+  const recs = state.solutionMap.recommendations || {};
+  const cards = [];
+
+  if (recs.firewall && recs.firewall[a.org_size]) {
+    const fw = recs.firewall[a.org_size];
+    const qty = a.ha_required === "yes" ? 2 : 1;
+    cards.push({
+      icon: "\uD83D\uDD25",
+      title: `Sophos Firewall: ${fw.model}`,
+      desc: fw.description,
+      why: qty === 2
+        ? `Quoted as an HA pair (${qty}x identical appliances). Only one set of subscriptions needed.`
+        : "Single firewall deployment.",
+    });
+  }
+
+  if (a.bundle) {
+    const bundleName = a.bundle === "xstream" ? "Xstream Protection" : "Standard Protection";
+    const bundleDesc = a.bundle === "xstream"
+      ? "Includes Network Protection, Web Protection, Zero-Day Protection, Central Orchestration, and Enhanced Support Plus."
+      : "Includes Network Protection, Web Protection, and Enhanced Support.";
+    cards.push({ icon: "\uD83D\uDEE1\uFE0F", title: bundleName, desc: bundleDesc, why: a.ha_required === "yes" && a.bundle === "standard" ? "Consider upgrading to Xstream Protection for Enhanced Support Plus HA RMA coverage." : "" });
+  }
+
+  if (a.poe_switches === "yes" || a.poe_switches === "no_poe") {
+    const isPoe = a.poe_switches === "yes";
+    const prefix = isPoe ? "poe" : "standard";
+    const size = a.org_size === "small" ? "small" : a.org_size === "enterprise" ? "large" : "medium";
+    const model = recs.switches?.[`${prefix}_${size}`] || (isPoe ? "Sophos PoE Switch" : "Sophos Switch");
+    cards.push({
+      icon: isPoe ? "\uD83D\uDD0C" : "\uD83D\uDD00",
+      title: model,
+      desc: isPoe ? "Power over Ethernet for IP phones, cameras, APs, and IoT devices." : "Standard managed switch for LAN connectivity.",
+      why: "Managed from Sophos Central alongside firewalls and wireless.",
+    });
+  }
+
+  if (a.wireless === "yes") {
+    cards.push({
+      icon: "\uD83D\uDCF6",
+      title: "Sophos AP6 Wireless Access Points",
+      desc: "Wi-Fi 6/6E enterprise access points managed from Sophos Central with per-SSID firewall policy.",
+      why: "Integrated management with Sophos Firewall for consistent security policy across wired and wireless.",
+    });
+  }
+
+  if (a.remote_access === "ztna") {
+    cards.push({
+      icon: "\uD83D\uDD10",
+      title: "Sophos ZTNA",
+      desc: "Zero Trust Network Access provides application-level access control for remote workers. Users only see the applications they are authorised to use.",
+      why: "Modern alternative to VPN \u2014 reduces attack surface, integrates with Sophos endpoint health checks.",
+    });
+  } else if (a.remote_access === "vpn") {
+    cards.push({
+      icon: "\uD83C\uDF10",
+      title: "Sophos Firewall VPN (included)",
+      desc: "SSL VPN and IPsec VPN included with the firewall at no extra cost.",
+      why: "Traditional remote access. Consider ZTNA as a future upgrade for better security posture.",
+    });
+  }
+
+  if (a.branch_type === "sd_red") {
+    cards.push({
+      icon: "\uD83D\uDCE6",
+      title: "Sophos SD-RED",
+      desc: "Plug-and-play remote Ethernet devices that create encrypted tunnels back to the central firewall. No on-site IT needed.",
+      why: "Ideal for small branches, retail locations, or home workers who need site-to-site connectivity.",
+    });
+  } else if (a.branch_type === "firewall") {
+    cards.push({
+      icon: "\uD83C\uDFE2",
+      title: "Sophos Firewall at each branch + SD-WAN",
+      desc: "Full firewall deployment at each branch with SD-WAN for intelligent link management and orchestrated VPN tunnels.",
+      why: "Best for branches that need local security processing and breakout.",
+    });
+  }
+
+  if (a.num_sites !== "single") {
+    cards.push({
+      icon: "\u2601\uFE0F",
+      title: "Sophos Central Orchestration",
+      desc: "Centralised management, SD-WAN VPN orchestration, and cross-firewall reporting for multi-site environments.",
+      why: "Included in Xstream Protection. Essential for multi-site deployments.",
+    });
+  }
+
+  let html = '<div class="smap-summary">';
+  html += "<h3>Recommended Sophos Solution</h3>";
+
+  if (a.remote_access === "vpn") {
+    html += `<div class="smap-upsell">
+      <h4>Consider Sophos ZTNA</h4>
+      <p>The customer selected traditional VPN, but ZTNA provides a more secure, modern approach to remote access. ZTNA offers application-level access control, integrates with endpoint health checks, and reduces the attack surface compared to full network-level VPN access. It\u2019s worth discussing as an upgrade path.</p>
+    </div>`;
+  }
+
+  if (a.ha_required === "yes" && a.bundle === "standard") {
+    html += `<div class="smap-upsell">
+      <h4>HA Deployment: Upgrade to Xstream Protection</h4>
+      <p>The customer requires HA but selected Standard Protection. With Standard, the auxiliary firewall only gets return-and-replace RMA (1\u20132 weeks). Upgrading to Xstream Protection includes Enhanced Support Plus, which provides advance replacement for both units in the HA pair.</p>
+    </div>`;
+  }
+
+  html += '<div class="smap-summary-grid">';
+  for (const c of cards) {
+    html += `<div class="smap-rec-card">
+      <div class="smap-rec-icon">${c.icon}</div>
+      <h4>${c.title}</h4>
+      <p>${c.desc}</p>
+      ${c.why ? `<div class="smap-why">${c.why}</div>` : ""}
+    </div>`;
+  }
+  html += "</div>";
+
+  html += `<div style="text-align:center;margin-top:1.5rem">
+    <button class="btn-primary" id="smap-restart">Start Over</button>
+  </div>`;
+  html += "</div>";
+
+  container.innerHTML = html;
+
+  document.getElementById("smap-restart")?.addEventListener("click", () => {
+    state.smStep = 0;
+    state.smAnswers = {};
+    state.smDone = false;
+    renderSolutionMapPage();
+  });
 }
 
 // ── AI Chat ──

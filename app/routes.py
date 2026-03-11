@@ -7,9 +7,11 @@ from .data import (
     HARDWARE_TIERS,
     HEALTHCHECK_DATA,
     LICENSING_DATA,
+    SOLUTION_MAP_DATA,
     TAKEAWAYS,
     TAKEDOWN_DATA,
     VENDORS,
+    VERTICALS_DATA,
 )
 
 main = Blueprint("main", __name__)
@@ -70,3 +72,13 @@ def api_licensing():
 @main.route("/api/ha-guide")
 def api_ha_guide():
     return jsonify(HA_GUIDE_DATA)
+
+
+@main.route("/api/verticals")
+def api_verticals():
+    return jsonify(VERTICALS_DATA)
+
+
+@main.route("/api/solution-map")
+def api_solution_map():
+    return jsonify(SOLUTION_MAP_DATA)

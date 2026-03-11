@@ -1124,3 +1124,347 @@ TAKEAWAYS = [
         "vendor": "fortinet",
     },
 ]
+
+VERTICALS_DATA = {
+    "verticals": [
+        {
+            "key": "education",
+            "name": "Education",
+            "icon": "\U0001F393",
+            "description": "Schools, colleges, and universities face unique challenges: safeguarding students online, complying with Keeping Children Safe in Education (KCSiE) and CIPA, managing BYOD across campuses, and doing it all on tight budgets.",
+            "requirements": [
+                {
+                    "title": "Web Filtering & SafeSearch Enforcement",
+                    "description": "KCSiE (UK) and CIPA (US) mandate that schools filter inappropriate content and enforce SafeSearch. Sophos Web Protection provides 90+ URL categories with enforced SafeSearch.",
+                    "sophos_solution": "Sophos Firewall Web Protection subscription with TLS Inspection",
+                },
+                {
+                    "title": "Content Filtering Reports for Safeguarding Leads",
+                    "description": "Designated Safeguarding Leads need visibility into student browsing patterns and flagged activity. Sophos Central provides detailed user-level reporting.",
+                    "sophos_solution": "Sophos Central Firewall Reporting Advanced (CFR)",
+                },
+                {
+                    "title": "Network Segmentation for Staff vs Student",
+                    "description": "Schools must isolate staff networks (payroll, student records) from student/guest Wi-Fi. VLANs and zone-based policy on the firewall enforce this separation.",
+                    "sophos_solution": "Sophos Firewall zone-based policy + Sophos Switches + Sophos AP6 Wireless",
+                },
+                {
+                    "title": "BYOD & Guest Wi-Fi",
+                    "description": "Students and visitors bring their own devices. Captive portal authentication and bandwidth controls prevent abuse.",
+                    "sophos_solution": "Sophos Firewall captive portal + Sophos Wireless with per-SSID policy",
+                },
+                {
+                    "title": "Ransomware & Lateral Movement Protection",
+                    "description": "Education is one of the most targeted sectors for ransomware. Synchronized Security isolates compromised endpoints automatically.",
+                    "sophos_solution": "Sophos Firewall with Sophos Endpoint (Security Heartbeat)",
+                },
+                {
+                    "title": "Multi-Site Connectivity",
+                    "description": "Multi-academy trusts (MATs) and university campuses need secure site-to-site connectivity. SD-WAN orchestration simplifies this.",
+                    "sophos_solution": "Sophos Firewall SD-WAN + Central Orchestration (VPN orchestration)",
+                },
+            ],
+            "talk_points": [
+                "Sophos is used by thousands of schools and universities worldwide, with education-specific pricing available.",
+                "TLS inspection is critical for safeguarding as 95%+ of web traffic is encrypted \u2014 without it, web filtering is largely ineffective.",
+                "Synchronized Security provides automated threat response that doesn\u2019t rely on overstretched IT teams \u2014 critical for schools with limited IT staff.",
+                "Central management means a small IT team can manage firewalls, switches, wireless, and endpoints from a single pane of glass.",
+                "SD-WAN orchestration lets MATs connect all their schools securely without complex manual VPN configuration.",
+            ],
+        },
+        {
+            "key": "manufacturing",
+            "name": "Manufacturing",
+            "icon": "\U0001F3ED",
+            "description": "Manufacturing environments must protect both IT and OT (Operational Technology) networks, prevent production downtime from cyber attacks, and secure increasingly connected industrial systems.",
+            "requirements": [
+                {
+                    "title": "IT/OT Network Segmentation",
+                    "description": "Industrial control systems (ICS/SCADA) must be isolated from corporate IT to prevent lateral movement. Micro-segmentation at the firewall prevents cross-contamination.",
+                    "sophos_solution": "Sophos Firewall zone-based policy with IPS for industrial protocols",
+                },
+                {
+                    "title": "Ransomware Protection for Production",
+                    "description": "A ransomware attack on manufacturing can halt production lines costing millions per day. Automated isolation of compromised endpoints keeps production running.",
+                    "sophos_solution": "Sophos Firewall + Sophos Endpoint (Synchronized Security / Security Heartbeat)",
+                },
+                {
+                    "title": "Branch Factory & Remote Site Connectivity",
+                    "description": "Manufacturing plants spread across regions need secure, reliable connectivity back to HQ for ERP and central systems.",
+                    "sophos_solution": "Sophos SD-RED for plug-and-play branch connectivity + Sophos Firewall SD-WAN",
+                },
+                {
+                    "title": "PoE Switching for IP Cameras & IoT Sensors",
+                    "description": "Factory floors use IP cameras, environmental sensors, and IoT devices that need PoE power delivery and network segmentation.",
+                    "sophos_solution": "Sophos PoE Switches with VLAN segmentation managed from Sophos Central",
+                },
+                {
+                    "title": "High Availability for 24/7 Operations",
+                    "description": "Factories run 24/7 and cannot tolerate firewall downtime. Active/Passive HA ensures continuous protection.",
+                    "sophos_solution": "Sophos Firewall HA pair with Xstream Protection (Enhanced Support Plus for HA RMA)",
+                },
+            ],
+            "talk_points": [
+                "Manufacturing is the #1 most targeted industry for ransomware \u2014 Sophos\u2019s Synchronized Security provides automated response without manual intervention.",
+                "SD-RED devices provide secure encrypted tunnels from remote factories to HQ without needing a full firewall at each site.",
+                "Sophos PoE switches can power and segment IoT/OT devices directly, all managed centrally.",
+                "IPS signatures include industrial protocol inspection for SCADA/ICS environments.",
+                "HA deployment with Enhanced Support Plus ensures both firewalls are covered with advance replacement RMA.",
+            ],
+        },
+        {
+            "key": "finance",
+            "name": "Financial Services",
+            "icon": "\U0001F3E6",
+            "description": "Banks, insurance companies, and fintech firms must meet strict regulatory requirements (PCI-DSS, SOX, FCA) while defending against sophisticated, targeted attacks on financial data.",
+            "requirements": [
+                {
+                    "title": "PCI-DSS Compliance",
+                    "description": "Payment card environments require network segmentation, IPS, and detailed logging. Sophos Firewall provides all three natively.",
+                    "sophos_solution": "Sophos Firewall (IPS, zone segmentation, detailed logging) + CFR Advanced for audit trails",
+                },
+                {
+                    "title": "TLS Inspection for Encrypted Threats",
+                    "description": "Financial services face sophisticated threats hidden in encrypted traffic. Xstream TLS inspection at wire speed is essential.",
+                    "sophos_solution": "Sophos Firewall Xstream TLS Inspection with hardware-accelerated decryption",
+                },
+                {
+                    "title": "Zero-Day & Advanced Threat Protection",
+                    "description": "State-sponsored and advanced persistent threats (APTs) target financial institutions. Cloud sandboxing catches unknown malware.",
+                    "sophos_solution": "Sophos Firewall Xstream Protection bundle (Zero-Day Protection / cloud sandboxing)",
+                },
+                {
+                    "title": "Zero Trust Network Access",
+                    "description": "Remote and hybrid workers need secure access to internal applications without exposing them on the internet. ZTNA replaces legacy VPN.",
+                    "sophos_solution": "Sophos ZTNA for identity-based, application-level access control",
+                },
+                {
+                    "title": "High Availability & Business Continuity",
+                    "description": "Financial services require five-nines uptime. HA with Enhanced Support Plus is mandatory for business-critical infrastructure.",
+                    "sophos_solution": "Sophos Firewall HA pair with Xstream Protection",
+                },
+            ],
+            "talk_points": [
+                "Sophos Firewall\u2019s Xstream architecture provides hardware-accelerated TLS inspection at wire speed \u2014 essential for financial environments where all traffic must be inspected.",
+                "Cloud sandboxing (Zero-Day Protection) uses machine learning to detect novel threats before they reach the network.",
+                "ZTNA replaces legacy VPN with application-level access control \u2014 users only see the applications they\u2019re authorised to use.",
+                "Detailed logging and Central Firewall Reporting support audit and compliance requirements for PCI-DSS and SOX.",
+                "Synchronized Security automates incident response, reducing mean time to contain (MTTC) from hours to seconds.",
+            ],
+        },
+        {
+            "key": "healthcare",
+            "name": "Healthcare",
+            "icon": "\U0001F3E5",
+            "description": "Hospitals and healthcare providers must protect sensitive patient data (PHI), secure connected medical devices, and maintain uptime for life-critical systems while meeting HIPAA, GDPR, and NHS DSPT requirements.",
+            "requirements": [
+                {
+                    "title": "Medical Device Segmentation",
+                    "description": "Connected medical devices (MRI, ventilators, patient monitors) run legacy OS and cannot be patched. Network segmentation isolates them from threats.",
+                    "sophos_solution": "Sophos Firewall zone-based policy + Sophos Switches for VLAN segmentation",
+                },
+                {
+                    "title": "HIPAA / GDPR / DSPT Compliance",
+                    "description": "Healthcare data protection regulations require encryption, access controls, audit logging, and breach notification capabilities.",
+                    "sophos_solution": "Sophos Firewall (TLS inspection, IPS, detailed logging) + Sophos Central reporting",
+                },
+                {
+                    "title": "Ransomware Protection",
+                    "description": "Healthcare is the second most targeted sector for ransomware. Attacks on hospitals can directly endanger patient lives.",
+                    "sophos_solution": "Sophos Firewall + Sophos Endpoint (Synchronized Security for automated isolation)",
+                },
+                {
+                    "title": "Secure Wi-Fi for Staff & Patient",
+                    "description": "Hospitals need separate secure Wi-Fi for clinical staff, medical devices, and patient/guest access on the same physical infrastructure.",
+                    "sophos_solution": "Sophos Wireless AP6 with multiple SSIDs and per-SSID firewall policy",
+                },
+                {
+                    "title": "High Availability for Life-Critical Systems",
+                    "description": "Hospital firewalls must have zero downtime. An HA pair with Enhanced Support Plus ensures continuous protection and rapid replacement.",
+                    "sophos_solution": "Sophos Firewall HA pair with Xstream Protection (Enhanced Support Plus)",
+                },
+            ],
+            "talk_points": [
+                "Sophos Synchronized Security can automatically isolate compromised medical devices without taking down the entire network.",
+                "VLAN segmentation through Sophos Switches separates medical devices from the corporate network at Layer 2.",
+                "Sophos Wireless provides dedicated SSIDs for clinical, medical device, and patient networks \u2014 each with its own firewall policy.",
+                "Central management means a small healthcare IT team can manage the entire security infrastructure from one dashboard.",
+                "Healthcare-specific threats like targeted ransomware are detected and blocked by Sophos\u2019s advanced threat protection and cloud sandboxing.",
+            ],
+        },
+        {
+            "key": "retail",
+            "name": "Retail",
+            "icon": "\U0001F6D2",
+            "description": "Retailers must secure point-of-sale (POS) systems, meet PCI-DSS requirements, protect customer data, and maintain connectivity across distributed store locations.",
+            "requirements": [
+                {
+                    "title": "PCI-DSS Compliance for POS Systems",
+                    "description": "Payment card data must be isolated in a segmented network with IPS protection and detailed audit logging.",
+                    "sophos_solution": "Sophos Firewall zone segmentation + IPS + CFR Advanced logging",
+                },
+                {
+                    "title": "Multi-Store Connectivity",
+                    "description": "Retail chains need each store securely connected back to HQ for inventory, POS, and back-office systems.",
+                    "sophos_solution": "Sophos SD-RED for lightweight branch connectivity or Sophos Firewall SD-WAN for larger stores",
+                },
+                {
+                    "title": "Guest Wi-Fi with Brand Portal",
+                    "description": "Customer-facing Wi-Fi needs captive portal, bandwidth management, and isolation from the POS/back-office network.",
+                    "sophos_solution": "Sophos Wireless AP6 with captive portal + Sophos Firewall bandwidth controls",
+                },
+                {
+                    "title": "PoE Switching for IP Cameras & POS",
+                    "description": "Retail locations need PoE for IP cameras, POS terminals, and digital signage \u2014 all on a segmented network.",
+                    "sophos_solution": "Sophos PoE Switches with VLAN-per-device-type segmentation",
+                },
+            ],
+            "talk_points": [
+                "SD-RED provides plug-and-play branch connectivity for stores without needing on-site IT \u2014 just ship the device and it auto-connects.",
+                "PCI-DSS requires network segmentation for POS environments \u2014 Sophos Firewall and Switches provide this natively.",
+                "Sophos Central lets HQ manage firewalls, switches, and wireless across hundreds of stores from a single console.",
+                "Guest Wi-Fi can be isolated with captive portal and bandwidth limits, protecting POS systems from customer device threats.",
+            ],
+        },
+        {
+            "key": "government",
+            "name": "Government",
+            "icon": "\U0001F3DB\uFE0F",
+            "description": "Government agencies handle classified and sensitive citizen data, face nation-state threats, and must comply with strict procurement and security standards (Cyber Essentials, NIST, FedRAMP).",
+            "requirements": [
+                {
+                    "title": "Cyber Essentials / NIST Compliance",
+                    "description": "Government IT must demonstrate baseline security controls including firewalls, access controls, patching, and malware protection.",
+                    "sophos_solution": "Sophos Firewall (IPS, Web Protection, TLS inspection) aligned with Cyber Essentials requirements",
+                },
+                {
+                    "title": "Secure Remote Access for Government Workers",
+                    "description": "Government employees need secure access to internal systems from various locations without exposing applications to the internet.",
+                    "sophos_solution": "Sophos ZTNA for zero-trust application access, replacing legacy VPN",
+                },
+                {
+                    "title": "Advanced Threat Protection",
+                    "description": "Government agencies are prime targets for APTs and nation-state attacks. Multi-layered threat protection with sandboxing is essential.",
+                    "sophos_solution": "Sophos Firewall Xstream Protection (IPS + ATP + Zero-Day Protection)",
+                },
+                {
+                    "title": "Centralised Multi-Site Management",
+                    "description": "Government departments span many buildings and locations. Central orchestration simplifies management and ensures policy consistency.",
+                    "sophos_solution": "Sophos Central Firewall Management + SD-WAN VPN Orchestration",
+                },
+                {
+                    "title": "High Availability for Critical Infrastructure",
+                    "description": "Government systems are critical national infrastructure. HA deployment with enhanced support is a minimum requirement.",
+                    "sophos_solution": "Sophos Firewall HA pair with Enhanced Support Plus",
+                },
+            ],
+            "talk_points": [
+                "Sophos is Cyber Essentials certified and its firewalls align with the technical controls required by the scheme.",
+                "ZTNA provides application-level access control that aligns with government zero-trust mandates.",
+                "Central management simplifies compliance reporting across multiple government sites.",
+                "Cloud sandboxing detects zero-day threats that signature-based detection alone would miss \u2014 critical for nation-state threat defence.",
+                "Sophos has a strong track record in government and public sector, with dedicated public sector pricing.",
+            ],
+        },
+    ],
+}
+
+SOLUTION_MAP_DATA = {
+    "questions": [
+        {
+            "id": "org_size",
+            "question": "How many users does the customer have?",
+            "context": "This helps determine the right firewall model sizing.",
+            "options": [
+                {"value": "small", "label": "1\u201350 users"},
+                {"value": "medium", "label": "50\u2013250 users"},
+                {"value": "large", "label": "250\u20131000 users"},
+                {"value": "enterprise", "label": "1000+ users"},
+            ],
+        },
+        {
+            "id": "num_sites",
+            "question": "How many sites does the customer have?",
+            "context": "Multi-site environments need SD-WAN, VPN orchestration, or SD-RED for branch connectivity.",
+            "options": [
+                {"value": "single", "label": "Single site"},
+                {"value": "2_5", "label": "2\u20135 sites"},
+                {"value": "6_20", "label": "6\u201320 sites"},
+                {"value": "20_plus", "label": "20+ sites"},
+            ],
+        },
+        {
+            "id": "ha_required",
+            "question": "Does the customer need High Availability (HA)?",
+            "context": "Business-critical environments should have an HA pair for failover protection. Always recommend Xstream Protection for HA.",
+            "options": [
+                {"value": "yes", "label": "Yes \u2014 HA is required"},
+                {"value": "no", "label": "No \u2014 single firewall is fine"},
+            ],
+        },
+        {
+            "id": "poe_switches",
+            "question": "Does the customer need PoE switches?",
+            "context": "PoE is needed for IP phones, cameras, wireless access points, and IoT devices that draw power over Ethernet.",
+            "options": [
+                {"value": "yes", "label": "Yes \u2014 they need PoE"},
+                {"value": "no_poe", "label": "Yes \u2014 standard switches (no PoE)"},
+                {"value": "none", "label": "No switches needed"},
+            ],
+        },
+        {
+            "id": "wireless",
+            "question": "Does the customer need wireless access points?",
+            "context": "Sophos AP6 series provides enterprise-grade Wi-Fi managed from Sophos Central.",
+            "options": [
+                {"value": "yes", "label": "Yes \u2014 wireless is needed"},
+                {"value": "no", "label": "No \u2014 wired only"},
+            ],
+        },
+        {
+            "id": "remote_access",
+            "question": "Do remote workers need access to internal applications?",
+            "context": "Traditional VPN is included with the firewall. ZTNA provides a modern, more secure alternative with application-level access control.",
+            "options": [
+                {"value": "ztna", "label": "Yes \u2014 modern approach (recommend ZTNA)"},
+                {"value": "vpn", "label": "Yes \u2014 traditional VPN is fine"},
+                {"value": "no", "label": "No remote access needed"},
+            ],
+        },
+        {
+            "id": "branch_type",
+            "question": "How should branch/remote offices connect?",
+            "context": "SD-RED provides simple plug-and-play tunnels for small branches. Full firewalls with SD-WAN are better for larger branches.",
+            "options": [
+                {"value": "sd_red", "label": "SD-RED (small branches, no on-site IT)"},
+                {"value": "firewall", "label": "Full firewall at each branch (SD-WAN)"},
+                {"value": "na", "label": "Not applicable (single site)"},
+            ],
+        },
+        {
+            "id": "bundle",
+            "question": "Which protection bundle fits the customer?",
+            "context": "Xstream Protection includes Zero-Day Protection, Central Orchestration, and Enhanced Support Plus. Always recommended for HA deployments.",
+            "options": [
+                {"value": "xstream", "label": "Xstream Protection (recommended)"},
+                {"value": "standard", "label": "Standard Protection (budget-conscious)"},
+            ],
+        },
+    ],
+    "recommendations": {
+        "firewall": {
+            "small": {"model": "XGS 87 / XGS 107", "description": "Desktop form factor ideal for small offices and retail locations."},
+            "medium": {"model": "XGS 2100 / XGS 2300", "description": "1U rackmount with dedicated Xstream Flow Processor for medium enterprises."},
+            "large": {"model": "XGS 3100 / XGS 3300", "description": "High-performance 1U with expanded port density for larger organisations."},
+            "enterprise": {"model": "XGS 4300 / XGS 4500 / XGS 8500", "description": "Modular high-throughput platforms for data centres and large campus networks."},
+        },
+        "switches": {
+            "poe_small": "Sophos CS101-8FP (8-port PoE+, 130W)",
+            "poe_medium": "Sophos CS210-24FP (24-port PoE+, 370W)",
+            "poe_large": "Sophos CS210-48FP (48-port PoE+, 740W)",
+            "standard_small": "Sophos CS101-8 (8-port GbE)",
+            "standard_medium": "Sophos CS210-24 (24-port GbE)",
+            "standard_large": "Sophos CS210-48 (48-port GbE)",
+        },
+    },
+}

@@ -1,17 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Firewall Hardware Comparison</title>
+  <title>Sophos Networking Portfolio Sales Toolkit</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
   <!-- Sticky header -->
   <header class="app-header">
     <div class="container header-inner">
-      <span class="logo">Firewall Compare</span>
+      <div class="logo-group">
+        <svg class="sophos-logo" viewBox="0 0 40 40" width="32" height="32" aria-hidden="true">
+          <circle cx="20" cy="20" r="19" fill="#005bac"/>
+          <path d="M12 14.5c0-1.5 1.2-2.5 3-2.5 2.2 0 3.8 1.2 3.8 1.2l1.2-2.5S18 9 14.8 9C11.5 9 9 11 9 14.5c0 7 9 5.5 9 9.5 0 1.5-1.2 2.5-3.2 2.5-2.5 0-4.3-1.5-4.3-1.5L9 27.5s2.2 1.8 5.5 1.8c3.5 0 6-2 6-5.5C26.5 16.5 12 18 12 14.5z" fill="#fff"/>
+        </svg>
+        <span class="logo">Sophos Sales Toolkit</span>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark mode">
+        <span class="theme-icon-sun">&#9788;</span>
+        <span class="theme-icon-moon">&#9790;</span>
+      </button>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="active" data-tab="overview">Overview</button>
         <button data-tab="hardware">Hardware Specs</button>
@@ -22,6 +34,8 @@
         <button data-tab="discovery">Discovery</button>
         <button data-tab="licensing">Licensing</button>
         <button data-tab="ha-guide">HA Quoting</button>
+        <button data-tab="verticals">Verticals</button>
+        <button data-tab="solution-map">Solution Map</button>
         <button data-tab="ask" class="nav-ai-btn">Ask AI</button>
       </nav>
     </div>
@@ -30,31 +44,29 @@
   <!-- Hero -->
   <section class="hero">
     <div class="container">
-      <h1>Firewall Hardware Comparison</h1>
+      <h1>Sophos Networking Portfolio Sales Toolkit</h1>
       <p>
-        A side-by-side look at enterprise firewall appliances from the leading
-        vendors&mdash;covering throughput, form factors, key capabilities, and
-        ideal use cases.
+        Your one-stop resource for Sophos Firewall, Switches, SD-RED, ZTNA,
+        and Wireless&mdash;competitive positioning, discovery tools, licensing
+        guidance, and technical best practices all in one place.
       </p>
-
-      <!-- Vendor toggle chips -->
-      <div class="vendor-filters" id="vendor-filters"></div>
     </div>
   </section>
 
   <main class="container">
 
-    <!-- Overview -->
+    <!-- Overview / Hub -->
     <section id="section-overview" class="page-section">
-      <div class="section-head">
-        <h2>Vendor Overview</h2>
-        <p>Five major NGFW vendors and what sets their hardware apart.</p>
-      </div>
-      <div class="card-grid"></div>
+      <div id="overview-hub"></div>
     </section>
 
     <!-- Hardware Specs -->
     <section id="section-hardware" class="page-section">
+      <div class="section-head">
+        <h2>Hardware Specs</h2>
+        <p>Side-by-side hardware comparison across vendors.</p>
+      </div>
+      <div class="vendor-filters" id="vendor-filters"></div>
       <div id="hw-tables"></div>
     </section>
 
@@ -120,6 +132,24 @@
         <p>Essential guidance for quoting Sophos Firewalls in High Availability configuration.</p>
       </div>
       <div id="ha-guide-container"></div>
+    </section>
+
+    <!-- Industry Verticals -->
+    <section id="section-verticals" class="page-section">
+      <div class="section-head">
+        <h2>Industry Verticals</h2>
+        <p>Tailored positioning for Sophos networking solutions across key industries.</p>
+      </div>
+      <div id="verticals-container"></div>
+    </section>
+
+    <!-- Solution Map -->
+    <section id="section-solution-map" class="page-section">
+      <div class="section-head">
+        <h2>Solution Map</h2>
+        <p>Answer a few questions about the customer's requirements and get a recommended Sophos networking solution.</p>
+      </div>
+      <div id="solution-map-container"></div>
     </section>
 
   </main>
