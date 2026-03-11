@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firewall Hardware Comparison</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <!-- Sticky header -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <span class="logo">Firewall Compare</span>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="active" data-tab="overview">Overview</button>
+        <button data-tab="hardware">Hardware Specs</button>
+        <button data-tab="features">Features</button>
+        <button data-tab="takeaways">Key Takeaways</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>Firewall Hardware Comparison</h1>
+      <p>
+        A side-by-side look at enterprise firewall appliances from the leading
+        vendors&mdash;covering throughput, form factors, key capabilities, and
+        ideal use cases.
+      </p>
+
+      <!-- Vendor toggle chips -->
+      <div class="vendor-filters" id="vendor-filters"></div>
+    </div>
+  </section>
+
+  <main class="container">
+
+    <!-- Overview -->
+    <section id="section-overview" class="page-section">
+      <div class="section-head">
+        <h2>Vendor Overview</h2>
+        <p>Five major NGFW vendors and what sets their hardware apart.</p>
+      </div>
+      <div class="card-grid"></div>
+    </section>
+
+    <!-- Hardware Specs -->
+    <section id="section-hardware" class="page-section">
+      <div id="hw-tables"></div>
+    </section>
+
+    <!-- Features -->
+    <section id="section-features" class="page-section">
+      <div class="section-head">
+        <h2>Feature &amp; Architecture Comparison</h2>
+        <p>How each vendor approaches security processing, management, and ecosystem integration.</p>
+      </div>
+      <div class="table-wrap" id="feature-table-wrap"></div>
+    </section>
+
+    <!-- Key Takeaways -->
+    <section id="section-takeaways" class="page-section">
+      <div class="section-head">
+        <h2>Key Takeaways</h2>
+        <p>Choosing the right firewall depends heavily on your environment, budget, and existing infrastructure.</p>
+      </div>
+      <div class="takeaway-grid"></div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Data is approximate and based on publicly available vendor datasheets as of early 2026. Always verify with the vendor for the latest specifications.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
