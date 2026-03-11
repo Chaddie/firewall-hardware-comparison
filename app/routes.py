@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, render_template
 
 from .data import (
+    DISCOVERY_DATA,
     FEATURE_COMPARISON,
     HARDWARE_TIERS,
     HEALTHCHECK_DATA,
@@ -52,3 +53,8 @@ def api_healthcheck():
 @main.route("/api/takedown")
 def api_takedown():
     return jsonify(TAKEDOWN_DATA)
+
+
+@main.route("/api/discovery")
+def api_discovery():
+    return jsonify(DISCOVERY_DATA)

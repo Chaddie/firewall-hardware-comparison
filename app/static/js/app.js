@@ -14,6 +14,12 @@ const state = {
   hcDone: false,
   hcReportView: "exec",
   tdSelectedVendor: null,
+  discovery: { products: [] },
+  discMode: "guided",
+  discProduct: null,
+  discStep: 0,
+  discNotes: {},
+  discGuidedDone: false,
 };
 
 // ── Bootstrap ──
@@ -27,18 +33,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderTakeaways();
   renderHealthCheckStart();
   renderTakedownPage();
+  renderDiscoveryPage();
   initChat();
   showTab("overview");
 });
 
 async function loadData() {
-  const [vendors, hardware, features, takeaways, healthcheck, takedown] = await Promise.all([
+  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery] = await Promise.all([
     fetch("/api/vendors").then((r) => r.json()),
     fetch("/api/hardware").then((r) => r.json()),
     fetch("/api/features").then((r) => r.json()),
     fetch("/api/takeaways").then((r) => r.json()),
     fetch("/api/healthcheck").then((r) => r.json()),
     fetch("/api/takedown").then((r) => r.json()),
+    fetch("/api/discovery").then((r) => r.json()),
   ]);
   state.vendors = vendors;
   state.hardware = hardware;
@@ -46,6 +54,7 @@ async function loadData() {
   state.takeaways = takeaways;
   state.healthcheck = healthcheck;
   state.takedown = takedown;
+  state.discovery = discovery;
   Object.keys(vendors).forEach((v) => state.activeVendors.add(v));
 }
 
@@ -537,6 +546,284 @@ function renderTakedownCompare() {
       renderTakedownCompare();
     });
   });
+}
+
+// ══════════════════════════════════════
+// SALES DISCOVERY
+// ══════════════════════════════════════
+
+function renderDiscoveryPage() {
+  const container = document.getElementById("discovery-container");
+  let html = `
+    <div class="disc-mode-toggle">
+      <button class="${state.discMode === 'guided' ? 'active' : ''}" data-disc-mode="guided">Guided Mode</button>
+      <button class="${state.discMode === 'reference' ? 'active' : ''}" data-disc-mode="reference">Quick Reference</button>
+    </div>
+  `;
+
+  if (state.discMode === "guided") {
+    html += renderDiscGuided();
+  } else {
+    html += renderDiscReference();
+  }
+
+  container.innerHTML = html;
+  bindDiscEvents(container);
+}
+
+function renderDiscGuided() {
+  const products = state.discovery.products;
+
+  if (state.discGuidedDone) {
+    return renderDiscSummary();
+  }
+
+  if (!state.discProduct) {
+    let html = `
+      <div style="text-align:center;margin-bottom:1rem">
+        <p style="color:var(--text-muted);font-size:.92rem">Choose a product area to begin the discovery conversation.</p>
+      </div>
+      <div class="disc-product-picker">
+    `;
+    for (const p of products) {
+      html += `<button class="disc-product-chip" data-disc-product="${p.key}">
+        <span class="disc-icon">${p.icon}</span> ${p.name}
+      </button>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  const product = products.find((p) => p.key === state.discProduct);
+  if (!product) return "";
+
+  const q = product.questions[state.discStep];
+  const total = product.questions.length;
+  const noteVal = state.discNotes[q.id] || "";
+
+  let html = `<div class="disc-step-container">`;
+
+  html += `
+    <div class="wizard-progress" style="margin-bottom:1.5rem">
+      <div class="wizard-progress-header">
+        <span>Question ${state.discStep + 1} of ${total}</span>
+        <strong>${Math.round((state.discStep / total) * 100)}%</strong>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${(state.discStep / total) * 100}%"></div>
+      </div>
+    </div>
+  `;
+
+  html += `
+    <div class="disc-step-card">
+      <div class="disc-step-meta">
+        <span class="disc-step-counter">${product.icon} ${product.name}</span>
+        <span class="disc-step-product" style="color:${product.color}">${q.id.replace(/^[a-z]+_/, "").replace(/_/g, " ")}</span>
+      </div>
+      <h3>${q.question}</h3>
+      <div class="disc-coaching-tip">${q.why}</div>
+  `;
+
+  if (q.follow_ups && q.follow_ups.length) {
+    html += `<div class="disc-follow-ups"><h4>Follow-up Questions</h4><ul>`;
+    for (const f of q.follow_ups) {
+      html += `<li>${f}</li>`;
+    }
+    html += `</ul></div>`;
+  }
+
+  html += `
+      <textarea class="disc-notes-area" id="disc-note-input" placeholder="Capture the prospect\u2019s response here...">${noteVal}</textarea>
+      <div class="disc-step-nav">
+        <button class="btn-back" ${state.discStep === 0 ? 'data-disc-back-product="true"' : 'data-disc-prev="true"'}>
+          ${state.discStep === 0 ? "\u2190 Products" : "\u2190 Back"}
+        </button>
+        <button class="btn-next" data-disc-next="true">
+          ${state.discStep === total - 1 ? "Finish \u2192" : "Next \u2192"}
+        </button>
+      </div>
+    </div>
+  </div>`;
+
+  return html;
+}
+
+function renderDiscSummary() {
+  const products = state.discovery.products;
+  let hasAnyNotes = false;
+
+  let html = `<div class="disc-summary">`;
+  html += `
+    <div class="disc-summary-actions">
+      <button class="btn-primary" id="disc-copy-btn">Copy to Clipboard</button>
+      <button class="btn-primary" id="disc-print-btn" style="background:var(--surface-alt);color:var(--text);border:1px solid var(--border)">Print Summary</button>
+      <button class="btn-primary" id="disc-restart-btn" style="background:var(--surface-alt);color:var(--text);border:1px solid var(--border)">New Session</button>
+    </div>
+  `;
+
+  for (const product of products) {
+    const productNotes = product.questions.filter((q) => state.discNotes[q.id]);
+    if (productNotes.length === 0) continue;
+    hasAnyNotes = true;
+
+    html += `<div class="disc-summary-product"><h3>${product.icon} ${product.name}</h3>`;
+    for (const q of product.questions) {
+      const note = state.discNotes[q.id];
+      if (!note) continue;
+      html += `
+        <div class="disc-summary-item">
+          <h4>${q.question}</h4>
+          <p>${note}</p>
+        </div>
+      `;
+    }
+    html += `</div>`;
+  }
+
+  if (!hasAnyNotes) {
+    html += `<div style="text-align:center;padding:2rem;color:var(--text-muted)">
+      <p>No notes were captured during this session. Start a new session to try again.</p>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function renderDiscReference() {
+  const products = state.discovery.products;
+  let html = "";
+
+  for (const product of products) {
+    html += `
+      <div class="disc-ref-section" data-ref-product="${product.key}">
+        <div class="disc-ref-header">
+          <h3>${product.icon} ${product.name} <span class="disc-count">(${product.questions.length} questions)</span></h3>
+          <span class="chevron">&#x25BC;</span>
+        </div>
+        <div class="disc-ref-body">
+          <div class="disc-ref-questions">
+    `;
+
+    for (const q of product.questions) {
+      html += `<div class="disc-ref-q"><h4>${q.question}</h4>`;
+      html += `<div class="disc-ref-why">${q.why}</div>`;
+      if (q.follow_ups && q.follow_ups.length) {
+        html += `<ul class="disc-ref-followups">`;
+        for (const f of q.follow_ups) {
+          html += `<li>${f}</li>`;
+        }
+        html += `</ul>`;
+      }
+      html += `</div>`;
+    }
+
+    html += `</div></div></div>`;
+  }
+
+  return html;
+}
+
+function bindDiscEvents(container) {
+  container.querySelectorAll("[data-disc-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.discMode = btn.dataset.discMode;
+      renderDiscoveryPage();
+    });
+  });
+
+  container.querySelectorAll("[data-disc-product]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.discProduct = btn.dataset.discProduct;
+      state.discStep = 0;
+      renderDiscoveryPage();
+    });
+  });
+
+  container.querySelector("[data-disc-prev]")?.addEventListener("click", () => {
+    saveCurrentNote();
+    if (state.discStep > 0) {
+      state.discStep--;
+      renderDiscoveryPage();
+    }
+  });
+
+  container.querySelector("[data-disc-back-product]")?.addEventListener("click", () => {
+    saveCurrentNote();
+    state.discProduct = null;
+    state.discStep = 0;
+    renderDiscoveryPage();
+  });
+
+  container.querySelector("[data-disc-next]")?.addEventListener("click", () => {
+    saveCurrentNote();
+    const product = state.discovery.products.find((p) => p.key === state.discProduct);
+    if (state.discStep < product.questions.length - 1) {
+      state.discStep++;
+      renderDiscoveryPage();
+    } else {
+      state.discProduct = null;
+      state.discStep = 0;
+      state.discGuidedDone = true;
+      renderDiscoveryPage();
+    }
+  });
+
+  container.querySelectorAll(".disc-ref-header").forEach((header) => {
+    header.addEventListener("click", () => {
+      header.parentElement.classList.toggle("open");
+    });
+  });
+
+  container.querySelector("#disc-copy-btn")?.addEventListener("click", () => {
+    const text = buildSummaryText();
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = container.querySelector("#disc-copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = "Copy to Clipboard"; }, 2000);
+    });
+  });
+
+  container.querySelector("#disc-print-btn")?.addEventListener("click", () => {
+    window.print();
+  });
+
+  container.querySelector("#disc-restart-btn")?.addEventListener("click", () => {
+    state.discNotes = {};
+    state.discProduct = null;
+    state.discStep = 0;
+    state.discGuidedDone = false;
+    renderDiscoveryPage();
+  });
+}
+
+function saveCurrentNote() {
+  const input = document.getElementById("disc-note-input");
+  if (!input) return;
+  const product = state.discovery.products.find((p) => p.key === state.discProduct);
+  if (!product) return;
+  const q = product.questions[state.discStep];
+  const val = input.value.trim();
+  if (val) {
+    state.discNotes[q.id] = val;
+  } else {
+    delete state.discNotes[q.id];
+  }
+}
+
+function buildSummaryText() {
+  let text = "SALES DISCOVERY NOTES\n" + "=".repeat(40) + "\n\n";
+  for (const product of state.discovery.products) {
+    const notes = product.questions.filter((q) => state.discNotes[q.id]);
+    if (notes.length === 0) continue;
+    text += `${product.name}\n${"-".repeat(30)}\n`;
+    for (const q of notes) {
+      text += `Q: ${q.question}\nA: ${state.discNotes[q.id]}\n\n`;
+    }
+    text += "\n";
+  }
+  return text.trim();
 }
 
 // ── AI Chat ──

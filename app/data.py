@@ -556,6 +556,332 @@ TAKEDOWN_DATA = {
     },
 }
 
+DISCOVERY_DATA = {
+    "products": [
+        {
+            "key": "firewall",
+            "name": "Sophos Firewall",
+            "icon": "\U0001F6E1",
+            "color": "#ff922b",
+            "questions": [
+                {
+                    "id": "fw_current_vendor",
+                    "question": "What firewall solution are you currently using, and when is your renewal date?",
+                    "why": "Establishes the competitive landscape and identifies the urgency window. Renewal dates create natural opportunities for a switch.",
+                    "follow_ups": [
+                        "How long have you been with this vendor?",
+                        "What made you choose them originally?",
+                        "Are there any contractual lock-ins we should be aware of?",
+                    ],
+                },
+                {
+                    "id": "fw_pain_points",
+                    "question": "What are the biggest challenges you face with your current firewall?",
+                    "why": "Uncovers dissatisfaction that Sophos can address. Common pains include complexity, poor visibility, slow support, or cost.",
+                    "follow_ups": [
+                        "Have you experienced any security incidents that your current firewall missed?",
+                        "How much time does your team spend managing firewall rules and policies each week?",
+                    ],
+                },
+                {
+                    "id": "fw_throughput",
+                    "question": "What are your current bandwidth requirements, and do you expect them to grow?",
+                    "why": "Ensures we right-size the appliance. Undersizing causes performance bottlenecks; oversizing wastes budget.",
+                    "follow_ups": [
+                        "What is your current internet circuit bandwidth?",
+                        "Do you plan to upgrade your internet links in the next 12\u201324 months?",
+                        "How many concurrent users do you typically have?",
+                    ],
+                },
+                {
+                    "id": "fw_tls",
+                    "question": "Are you currently inspecting encrypted (TLS/SSL) traffic on your firewall?",
+                    "why": "Over 90% of traffic is encrypted. If they\u2019re not inspecting it, they have a massive visibility gap \u2014 a key Sophos Xstream differentiator.",
+                    "follow_ups": [
+                        "Do you know what percentage of your traffic is encrypted?",
+                        "Have you tried enabling TLS inspection before? What happened to performance?",
+                    ],
+                },
+                {
+                    "id": "fw_endpoint",
+                    "question": "What endpoint protection are you running, and does it integrate with your firewall?",
+                    "why": "Opens the Synchronized Security conversation \u2014 Sophos\u2019s unique heartbeat between endpoint and firewall for automated threat response.",
+                    "follow_ups": [
+                        "If a laptop gets infected, how quickly can you isolate it from the network today?",
+                        "Would automated isolation of compromised devices be valuable to your team?",
+                    ],
+                },
+                {
+                    "id": "fw_management",
+                    "question": "How do you manage your firewalls today? On-box, central management, or cloud?",
+                    "why": "Positions Sophos Central as a zero-infrastructure cloud management platform included at no extra cost.",
+                    "follow_ups": [
+                        "How many firewall locations do you manage?",
+                        "Do you have dedicated security staff or does IT wear multiple hats?",
+                        "Would a single cloud dashboard for firewalls, endpoints, and Wi-Fi be valuable?",
+                    ],
+                },
+                {
+                    "id": "fw_budget",
+                    "question": "What does your budget look like for this project, and what\u2019s your typical procurement timeline?",
+                    "why": "Qualifies the opportunity and ensures we propose the right tier. Also identifies whether they need CapEx or subscription pricing.",
+                    "follow_ups": [
+                        "Are you looking for a capital purchase or a subscription/MSP model?",
+                        "Who else is involved in the decision-making process?",
+                        "Are you evaluating other vendors alongside us?",
+                    ],
+                },
+            ],
+        },
+        {
+            "key": "switches",
+            "name": "Sophos Switches",
+            "icon": "\U0001F500",
+            "color": "#6c8cff",
+            "questions": [
+                {
+                    "id": "sw_current",
+                    "question": "What switching infrastructure do you currently have in place?",
+                    "why": "Understand the existing vendor, age of equipment, and whether they\u2019re due for a refresh.",
+                    "follow_ups": [
+                        "How old is your current switching hardware?",
+                        "Are you experiencing any performance issues or port shortages?",
+                        "What vendor and models are you running?",
+                    ],
+                },
+                {
+                    "id": "sw_poe",
+                    "question": "Do you need Power over Ethernet (PoE) for devices like IP phones, cameras, or access points?",
+                    "why": "PoE requirements drive model selection and budget. Sophos offers PoE and PoE+ across the range.",
+                    "follow_ups": [
+                        "How many PoE devices do you need to support?",
+                        "What is the total PoE wattage you require?",
+                    ],
+                },
+                {
+                    "id": "sw_management",
+                    "question": "How do you manage your switches today? CLI, web UI, or a central platform?",
+                    "why": "Sophos switches are managed through Sophos Central alongside firewalls and APs \u2014 a single-pane-of-glass differentiator.",
+                    "follow_ups": [
+                        "Would consolidating switch, firewall, and Wi-Fi management into one cloud console appeal to you?",
+                        "How much time does your team spend on switch configuration and troubleshooting?",
+                    ],
+                },
+                {
+                    "id": "sw_scale",
+                    "question": "How many switch ports do you need across all locations, and do you expect growth?",
+                    "why": "Sizes the opportunity and identifies whether they need access-layer, aggregation, or both.",
+                    "follow_ups": [
+                        "Do you need 1G access ports, 10G uplinks, or both?",
+                        "How many floors or wiring closets do you have?",
+                        "Are you planning any office expansions or new sites?",
+                    ],
+                },
+                {
+                    "id": "sw_segmentation",
+                    "question": "Are you using VLANs to segment your network traffic today?",
+                    "why": "Segmentation is a security best practice. Ties into the firewall health check conversation and Sophos\u2019s integrated approach.",
+                    "follow_ups": [
+                        "How many VLANs do you currently have?",
+                        "Do you separate IoT, guest, and corporate traffic?",
+                    ],
+                },
+                {
+                    "id": "sw_stacking",
+                    "question": "Do you need switch stacking or link aggregation for high availability?",
+                    "why": "Identifies resilience requirements and whether they need higher-end models with stacking support.",
+                    "follow_ups": [
+                        "Is network downtime a critical concern for your business?",
+                        "Do you have redundant uplinks today?",
+                    ],
+                },
+            ],
+        },
+        {
+            "key": "sdred",
+            "name": "Sophos SD-RED",
+            "icon": "\U0001F310",
+            "color": "#51cf66",
+            "questions": [
+                {
+                    "id": "red_sites",
+                    "question": "How many remote or branch office sites do you have?",
+                    "why": "Quantifies the SD-RED opportunity. Each site is a potential unit sale plus the value of simplified remote networking.",
+                    "follow_ups": [
+                        "Where are these sites located geographically?",
+                        "Do all sites need full firewall functionality, or just secure tunnelling back to HQ?",
+                    ],
+                },
+                {
+                    "id": "red_current_wan",
+                    "question": "How are your remote sites connected to your main network today?",
+                    "why": "Identifies whether they\u2019re using MPLS (expensive), site-to-site VPN (complex), or nothing (security gap).",
+                    "follow_ups": [
+                        "What is your monthly cost for MPLS or dedicated WAN links?",
+                        "Have you considered replacing MPLS with internet-based SD-WAN tunnels?",
+                    ],
+                },
+                {
+                    "id": "red_vpn_pain",
+                    "question": "What challenges do you face setting up and maintaining VPN tunnels to remote sites?",
+                    "why": "SD-RED\u2019s zero-touch deployment eliminates VPN complexity \u2014 plug in the device and it auto-connects.",
+                    "follow_ups": [
+                        "How long does it take to bring a new site online today?",
+                        "Do you have IT staff at remote sites, or are they unstaffed?",
+                    ],
+                },
+                {
+                    "id": "red_bandwidth",
+                    "question": "What bandwidth do your remote sites need, and what type of internet do they have?",
+                    "why": "Ensures the right SD-RED model is selected. Also opens up split-tunnel vs full-tunnel architecture discussion.",
+                    "follow_ups": [
+                        "Do remote users need direct internet breakout for cloud apps like Microsoft 365?",
+                        "Would you prefer all traffic to route through HQ for inspection, or split-tunnel?",
+                    ],
+                },
+                {
+                    "id": "red_deployment",
+                    "question": "How important is zero-touch deployment for your remote sites?",
+                    "why": "SD-RED can be pre-configured in Sophos Central and shipped to a site \u2014 a non-technical user just plugs it in. Huge differentiator for distributed organisations.",
+                    "follow_ups": [
+                        "Could you see value in shipping a pre-configured device to a site with no IT staff?",
+                        "How much do you currently spend sending engineers to remote sites for network setup?",
+                    ],
+                },
+            ],
+        },
+        {
+            "key": "ztna",
+            "name": "Sophos ZTNA",
+            "icon": "\U0001F512",
+            "color": "#a78bfa",
+            "questions": [
+                {
+                    "id": "ztna_remote",
+                    "question": "How many of your employees work remotely, and how often?",
+                    "why": "Quantifies the remote access user base. More remote users = bigger ZTNA opportunity and stronger ROI story.",
+                    "follow_ups": [
+                        "Is remote work permanent, hybrid, or temporary?",
+                        "Do contractors or third parties also need remote access?",
+                    ],
+                },
+                {
+                    "id": "ztna_current_vpn",
+                    "question": "What VPN solution do you use for remote access today?",
+                    "why": "Traditional VPN grants broad network access \u2014 ZTNA provides granular, per-application access. Identifying VPN pain is the entry point.",
+                    "follow_ups": [
+                        "Are users frustrated with VPN performance or reliability?",
+                        "Has VPN capacity been a bottleneck?",
+                        "Do you have visibility into what resources VPN users are accessing?",
+                    ],
+                },
+                {
+                    "id": "ztna_apps",
+                    "question": "What internal applications do your remote users need access to?",
+                    "why": "ZTNA provides per-app access rather than full network access. Understanding the app landscape helps scope the deployment.",
+                    "follow_ups": [
+                        "Are these applications web-based, client-server, or both?",
+                        "Are any of these hosted in cloud IaaS (AWS, Azure)?",
+                        "Do different user groups need access to different applications?",
+                    ],
+                },
+                {
+                    "id": "ztna_identity",
+                    "question": "What identity provider do you use? (Azure AD, Okta, on-prem AD, etc.)",
+                    "why": "ZTNA relies on identity-based access control. Knowing their IdP determines integration complexity and architecture.",
+                    "follow_ups": [
+                        "Do you already use conditional access policies?",
+                        "Is MFA enforced for all users?",
+                    ],
+                },
+                {
+                    "id": "ztna_compliance",
+                    "question": "Do you have compliance requirements around remote access? (PCI, HIPAA, ISO 27001, Cyber Essentials)",
+                    "why": "Compliance drivers accelerate projects. ZTNA\u2019s least-privilege model directly supports audit and compliance requirements.",
+                    "follow_ups": [
+                        "Have auditors raised concerns about your current remote access model?",
+                        "Do you need to demonstrate least-privilege access in audit reports?",
+                    ],
+                },
+                {
+                    "id": "ztna_device_health",
+                    "question": "Is device health and posture important for granting remote access?",
+                    "why": "Sophos ZTNA can enforce device compliance checks (OS version, endpoint protection status) before granting access \u2014 a key zero-trust principle.",
+                    "follow_ups": [
+                        "Would you block access from devices that don\u2019t have up-to-date endpoint protection?",
+                        "Do you need to differentiate between corporate-managed and personal devices?",
+                    ],
+                },
+            ],
+        },
+        {
+            "key": "wireless",
+            "name": "Sophos Wireless",
+            "icon": "\U0001F4F6",
+            "color": "#ff6b6b",
+            "questions": [
+                {
+                    "id": "wifi_current",
+                    "question": "What wireless solution are you running today, and how old is it?",
+                    "why": "Identifies the competitive landscape and whether the hardware is due for a refresh (Wi-Fi 5 to Wi-Fi 6/6E).",
+                    "follow_ups": [
+                        "What vendor and AP models do you have?",
+                        "Do you support Wi-Fi 6 or 6E yet?",
+                        "Are you experiencing any dead zones or performance issues?",
+                    ],
+                },
+                {
+                    "id": "wifi_coverage",
+                    "question": "How many access points do you have, and does your coverage meet user expectations?",
+                    "why": "Sizes the opportunity and identifies gaps. Users expect seamless roaming and consistent performance.",
+                    "follow_ups": [
+                        "Have you done a wireless site survey recently?",
+                        "What areas have the worst coverage or most complaints?",
+                        "Are you planning any office renovations or expansions?",
+                    ],
+                },
+                {
+                    "id": "wifi_density",
+                    "question": "How many wireless devices connect per access point on average?",
+                    "why": "High-density environments (conference rooms, lecture halls, warehouses) need different AP models and design considerations.",
+                    "follow_ups": [
+                        "Do you have meeting rooms or event spaces where many devices connect simultaneously?",
+                        "Are IoT devices (sensors, cameras) also on the wireless network?",
+                    ],
+                },
+                {
+                    "id": "wifi_guest",
+                    "question": "Do you provide guest Wi-Fi access, and how do you manage it?",
+                    "why": "Guest access is a common requirement. Sophos APs support captive portals, vouchers, and social login integrated with the firewall.",
+                    "follow_ups": [
+                        "Do you need to capture guest information for compliance?",
+                        "Is guest traffic isolated from your corporate network?",
+                        "Do you throttle bandwidth for guest users?",
+                    ],
+                },
+                {
+                    "id": "wifi_management",
+                    "question": "How do you manage your wireless infrastructure? A dedicated controller, cloud, or standalone?",
+                    "why": "Sophos APs are managed via Sophos Central (cloud) with deep firewall integration \u2014 no separate wireless controller needed.",
+                    "follow_ups": [
+                        "Would you prefer cloud-managed APs with no on-site controller to maintain?",
+                        "Is a single management console for Wi-Fi, switches, and firewalls appealing?",
+                    ],
+                },
+                {
+                    "id": "wifi_security",
+                    "question": "What wireless security standards are you enforcing? (WPA2-Enterprise, WPA3, 802.1X)",
+                    "why": "Identifies security maturity. Sophos APs support WPA3 and integrate with RADIUS/AD for enterprise authentication.",
+                    "follow_ups": [
+                        "Do you use certificate-based authentication for wireless?",
+                        "Are you concerned about rogue access points on your network?",
+                    ],
+                },
+            ],
+        },
+    ],
+}
+
 TAKEAWAYS = [
     {
         "title": "Best Raw Throughput",
