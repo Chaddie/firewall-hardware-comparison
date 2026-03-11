@@ -1250,12 +1250,13 @@ tbody tr.dimmed { opacity: .15 }
 .lic-comparison { margin-bottom: 3rem; }
 .lic-comparison h3 { text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem; }
 .lic-comp-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; }
-.lic-comp-table th, .lic-comp-table td { padding: .85rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-size: .9rem; }
+.lic-comp-table th, .lic-comp-table td { padding: .85rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-size: .9rem; vertical-align: middle; }
 .lic-comp-table th { background: rgba(0,91,172,.1); font-weight: 700; color: var(--text); }
-.lic-comp-table th:not(:first-child), .lic-comp-table td:not(:first-child) { text-align: center; width: 140px; }
+.lic-comp-table th:not(:first-child), .lic-comp-table td:not(:first-child) { text-align: center; width: 140px; vertical-align: middle; }
 .lic-comp-table tr:last-child td { border-bottom: none; }
-.lic-check { color: #22c55e; font-weight: 700; font-size: 1.1rem; }
-.lic-cross { color: #ef4444; font-weight: 700; font-size: 1.1rem; }
+.lic-check, .lic-cross { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; font-weight: 700; font-size: 1rem; line-height: 1; border-radius: 50%; }
+.lic-check { color: #fff; background: #22c55e; }
+.lic-cross { color: #fff; background: #ef4444; }
 
 /* A la carte */
 .lic-alacarte { margin-bottom: 2rem; }
