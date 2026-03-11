@@ -3,8 +3,10 @@ from flask import Blueprint, jsonify, render_template
 from .data import (
     DISCOVERY_DATA,
     FEATURE_COMPARISON,
+    HA_GUIDE_DATA,
     HARDWARE_TIERS,
     HEALTHCHECK_DATA,
+    LICENSING_DATA,
     TAKEAWAYS,
     TAKEDOWN_DATA,
     VENDORS,
@@ -58,3 +60,13 @@ def api_takedown():
 @main.route("/api/discovery")
 def api_discovery():
     return jsonify(DISCOVERY_DATA)
+
+
+@main.route("/api/licensing")
+def api_licensing():
+    return jsonify(LICENSING_DATA)
+
+
+@main.route("/api/ha-guide")
+def api_ha_guide():
+    return jsonify(HA_GUIDE_DATA)

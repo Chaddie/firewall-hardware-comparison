@@ -20,6 +20,8 @@ const state = {
   discStep: 0,
   discNotes: {},
   discGuidedDone: false,
+  licensing: { bundles: [], a_la_carte: [], bundle_comparison: [] },
+  haGuide: {},
 };
 
 // ── Bootstrap ──
@@ -34,12 +36,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderHealthCheckStart();
   renderTakedownPage();
   renderDiscoveryPage();
+  renderLicensingPage();
+  renderHAGuidePage();
   initChat();
   showTab("overview");
 });
 
 async function loadData() {
-  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery] = await Promise.all([
+  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide] = await Promise.all([
     fetch("/api/vendors").then((r) => r.json()),
     fetch("/api/hardware").then((r) => r.json()),
     fetch("/api/features").then((r) => r.json()),
@@ -47,6 +51,8 @@ async function loadData() {
     fetch("/api/healthcheck").then((r) => r.json()),
     fetch("/api/takedown").then((r) => r.json()),
     fetch("/api/discovery").then((r) => r.json()),
+    fetch("/api/licensing").then((r) => r.json()),
+    fetch("/api/ha-guide").then((r) => r.json()),
   ]);
   state.vendors = vendors;
   state.hardware = hardware;
@@ -55,6 +61,8 @@ async function loadData() {
   state.healthcheck = healthcheck;
   state.takedown = takedown;
   state.discovery = discovery;
+  state.licensing = licensing;
+  state.haGuide = haGuide;
   Object.keys(vendors).forEach((v) => state.activeVendors.add(v));
 }
 
@@ -824,6 +832,132 @@ function buildSummaryText() {
     text += "\n";
   }
   return text.trim();
+}
+
+// ── Licensing Page ──
+function renderLicensingPage() {
+  const c = document.getElementById("licensing-container");
+  if (!c) return;
+  const { bundles, a_la_carte, bundle_comparison } = state.licensing;
+
+  let html = '<div class="lic-bundles">';
+  bundles.forEach((b) => {
+    html += `<div class="lic-bundle-card">
+      <span class="bundle-badge" style="background:${b.color}">${b.name}</span>
+      <h3 style="margin-top:1.8rem">${b.name}</h3>
+      <p class="bundle-tagline">${b.tagline}</p>
+      <p class="bundle-desc">${b.description}</p>`;
+    if (b.includes_standard) {
+      html += '<div class="lic-includes-note">Includes everything in Standard Protection, plus:</div>';
+    }
+    b.subscriptions.forEach((s) => {
+      html += `<div class="lic-sub-item">
+        <h4>${s.name}</h4>
+        <p class="sub-desc">${s.description}</p>
+        <ul class="lic-sub-features">
+          ${s.key_features.map((f) => `<li>${f}</li>`).join("")}
+        </ul>
+      </div>`;
+    });
+    html += "</div>";
+  });
+  html += "</div>";
+
+  if (bundle_comparison.length) {
+    html += '<div class="lic-comparison"><h3>Bundle Comparison at a Glance</h3>';
+    html += '<table class="lic-comp-table"><thead><tr><th>Feature</th><th>Standard</th><th>Xstream</th></tr></thead><tbody>';
+    bundle_comparison.forEach((row) => {
+      const sc = row.standard ? '<span class="lic-check">\u2713</span>' : '<span class="lic-cross">\u2717</span>';
+      const xc = row.xstream ? '<span class="lic-check">\u2713</span>' : '<span class="lic-cross">\u2717</span>';
+      html += `<tr><td>${row.feature}</td><td>${sc}</td><td>${xc}</td></tr>`;
+    });
+    html += "</tbody></table></div>";
+  }
+
+  if (a_la_carte.length) {
+    html += '<div class="lic-alacarte"><h3>A La Carte Subscriptions</h3><div class="lic-alacarte-grid">';
+    a_la_carte.forEach((a) => {
+      html += `<div class="lic-alacarte-card">
+        <h4>${a.name}</h4>
+        <p class="alc-desc">${a.description}</p>
+        <p class="alc-use"><strong>Typical use: </strong>${a.typical_use}</p>
+      </div>`;
+    });
+    html += "</div></div>";
+  }
+
+  c.innerHTML = html;
+}
+
+// ── HA Guide Page ──
+function renderHAGuidePage() {
+  const c = document.getElementById("ha-guide-container");
+  if (!c) return;
+  const g = state.haGuide;
+  if (!g.overview) return;
+
+  let html = "";
+
+  html += `<div class="ha-overview">
+    <h3>${g.overview.title}</h3>
+    <p>${g.overview.description}</p>
+  </div>`;
+
+  if (g.ha_basics) {
+    html += '<div class="ha-basics-grid">';
+    g.ha_basics.forEach((b) => {
+      html += `<div class="ha-basic-card">
+        <div class="ha-icon">${b.icon}</div>
+        <h4>${b.title}</h4>
+        <p>${b.description}</p>
+      </div>`;
+    });
+    html += "</div>";
+  }
+
+  if (g.support_comparison) {
+    const sc = g.support_comparison;
+    html += `<div class="ha-support-section">
+      <h3>${sc.title}</h3>
+      <p>${sc.description}</p>
+      <div class="ha-support-cards">`;
+    sc.tiers.forEach((t) => {
+      html += `<div class="ha-support-card ${t.level}">
+        <span class="support-tier-badge">${t.name}</span>
+        <h4>${t.name}</h4>
+        <div class="ha-rma-row">
+          <div class="ha-rma-item"><strong>Primary Unit RMA</strong>${t.rma_primary}</div>
+          <div class="ha-rma-item"><strong>Auxiliary Unit RMA</strong>${t.rma_auxiliary}</div>
+        </div>
+        <div class="ha-risk">${t.risk}</div>
+      </div>`;
+    });
+    html += "</div></div>";
+  }
+
+  if (g.quoting_checklist) {
+    html += '<div class="ha-checklist"><h3>Quoting Checklist</h3><div class="ha-checklist-items">';
+    g.quoting_checklist.forEach((item, i) => {
+      html += `<div class="ha-checklist-item">
+        <div class="ha-checklist-num">${i + 1}</div>
+        <div class="ha-checklist-text">
+          <h4>${item.item}</h4>
+          <p>${item.detail}</p>
+        </div>
+      </div>`;
+    });
+    html += "</div></div>";
+  }
+
+  if (g.talk_track) {
+    html += `<div class="ha-talk-track"><h3>${g.talk_track.title}</h3><div class="talk-card">`;
+    g.talk_track.paragraphs.forEach((p) => {
+      html += `<p>${p}</p>`;
+    });
+    html += "</div></div>";
+  }
+
+  c.innerHTML = html;
 }
 
 // ── AI Chat ──

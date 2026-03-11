@@ -882,6 +882,216 @@ DISCOVERY_DATA = {
     ],
 }
 
+LICENSING_DATA = {
+    "bundles": [
+        {
+            "key": "standard",
+            "name": "Standard Protection",
+            "color": "#6c8cff",
+            "tagline": "Essential security for every network",
+            "description": "The Standard Protection bundle provides the core security subscriptions needed for a well-protected network. It\u2019s the baseline for any Sophos Firewall deployment.",
+            "subscriptions": [
+                {
+                    "name": "Network Protection",
+                    "description": "Intrusion Prevention System (IPS), Advanced Threat Protection (ATP), SD-WAN, and Sophos Security Heartbeat\u2122 for Synchronized Security.",
+                    "key_features": [
+                        "IPS with regularly updated signatures",
+                        "Advanced Threat Protection (ATP) with multi-layer threat detection",
+                        "SD-WAN with application-based routing and link health monitoring",
+                        "Security Heartbeat\u2122 for automatic endpoint\u2013firewall communication",
+                        "RED (Remote Ethernet Device) management",
+                        "Wireless controller for Sophos APX/AP6 access points",
+                    ],
+                },
+                {
+                    "name": "Web Protection",
+                    "description": "Web filtering, URL categorisation, application control, and anti-malware scanning for web traffic.",
+                    "key_features": [
+                        "Web filtering with 90+ URL categories",
+                        "HTTPS scanning (with TLS inspection)",
+                        "Application control with 3,000+ application signatures",
+                        "Dual anti-virus engine scanning (Sophos + third-party)",
+                        "Pharming protection",
+                        "Enforced SafeSearch for search engines",
+                    ],
+                },
+                {
+                    "name": "Enhanced Support",
+                    "description": "24/7 phone and email support from Sophos, firmware update access, and advance hardware replacement.",
+                    "key_features": [
+                        "24/7 technical support via phone and email",
+                        "Access to all firmware updates and patches",
+                        "10/5 advance replacement (next business day, business hours)",
+                        "Access to the Sophos Support Portal and knowledge base",
+                    ],
+                },
+            ],
+        },
+        {
+            "key": "xstream",
+            "name": "Xstream Protection",
+            "color": "#a78bfa",
+            "tagline": "Complete protection with zero-day and cloud orchestration",
+            "description": "The Xstream Protection bundle includes everything in Standard Protection plus advanced zero-day threat protection and central orchestration for multi-firewall environments. This is the recommended bundle for most deployments.",
+            "includes_standard": True,
+            "subscriptions": [
+                {
+                    "name": "Zero-Day Protection",
+                    "description": "Cloud-based sandboxing powered by SophosLabs Intelix\u2122 for analysing suspicious files and detecting unknown threats.",
+                    "key_features": [
+                        "Cloud sandboxing with machine learning analysis",
+                        "Static and dynamic file analysis",
+                        "Deep learning threat detection models",
+                        "SophosLabs Intelix threat intelligence integration",
+                        "Automatic submission of suspicious files",
+                        "Detailed threat analysis reports in the dashboard",
+                    ],
+                },
+                {
+                    "name": "Central Orchestration",
+                    "description": "Sophos Central\u2013based management, reporting, and orchestration features for multi-firewall estates.",
+                    "key_features": [
+                        "Central Firewall Reporting Advanced (CFR Advanced) with cross-firewall reporting",
+                        "SD-WAN VPN orchestration for automated tunnel setup between sites",
+                        "Central Firewall Management via Sophos Central",
+                        "Group firewall policy management",
+                        "Backup management across all firewalls from Central",
+                    ],
+                },
+                {
+                    "name": "Enhanced Support Plus",
+                    "description": "Upgraded support with 24/7 advance hardware replacement and enhanced RMA for HA auxiliary units.",
+                    "key_features": [
+                        "24/7 technical support via phone and email",
+                        "24/7 advance hardware replacement (next business day, around the clock)",
+                        "Enhanced RMA coverage for HA auxiliary (passive) units",
+                        "Access to all firmware updates and patches",
+                        "Dedicated escalation paths for critical issues",
+                    ],
+                },
+            ],
+        },
+    ],
+    "a_la_carte": [
+        {
+            "name": "Network Protection",
+            "description": "Purchase IPS, ATP, SD-WAN, and Synchronized Security independently without a bundle.",
+            "typical_use": "Organisations that only need network-layer protection without web filtering.",
+        },
+        {
+            "name": "Web Protection",
+            "description": "Purchase web filtering, application control, and anti-malware scanning independently.",
+            "typical_use": "Environments that already have a separate web proxy but need firewall-level application control.",
+        },
+        {
+            "name": "Zero-Day Protection",
+            "description": "Add cloud sandboxing and deep-learning analysis as a standalone subscription.",
+            "typical_use": "Standard Protection customers who want to add zero-day threat detection without upgrading to the full Xstream bundle.",
+        },
+        {
+            "name": "Central Orchestration",
+            "description": "Add Sophos Central management, SD-WAN orchestration, and advanced cross-firewall reporting.",
+            "typical_use": "Multi-site deployments on Standard Protection that need centralised VPN orchestration and reporting.",
+        },
+        {
+            "name": "Enhanced Support",
+            "description": "24/7 support with 10/5 advance hardware replacement. Included in Standard Protection bundle.",
+            "typical_use": "Base-level support for standalone firewall deployments.",
+        },
+        {
+            "name": "Enhanced Support Plus",
+            "description": "24/7 support with 24/7 advance hardware replacement and enhanced HA auxiliary RMA.",
+            "typical_use": "Any HA deployment or business-critical environment requiring the fastest possible hardware replacement.",
+        },
+    ],
+    "bundle_comparison": [
+        {"feature": "Network Protection (IPS, ATP, SD-WAN)", "standard": True, "xstream": True},
+        {"feature": "Web Protection (filtering, app control)", "standard": True, "xstream": True},
+        {"feature": "Wireless Controller", "standard": True, "xstream": True},
+        {"feature": "RED Management", "standard": True, "xstream": True},
+        {"feature": "Security Heartbeat\u2122", "standard": True, "xstream": True},
+        {"feature": "Enhanced Support (24/7, 10/5 RMA)", "standard": True, "xstream": False},
+        {"feature": "Enhanced Support Plus (24/7, 24/7 RMA)", "standard": False, "xstream": True},
+        {"feature": "Zero-Day Protection (cloud sandboxing)", "standard": False, "xstream": True},
+        {"feature": "Central Orchestration (CFR, VPN orchestration)", "standard": False, "xstream": True},
+        {"feature": "HA Auxiliary Enhanced RMA", "standard": False, "xstream": True},
+    ],
+}
+
+HA_GUIDE_DATA = {
+    "overview": {
+        "title": "Quoting Sophos Firewalls in HA Configuration",
+        "description": "When a customer deploys two Sophos Firewalls in a High Availability (Active/Passive) cluster, only one set of subscriptions is needed \u2014 the licence covers both the primary and auxiliary unit. However, the choice of support subscription is critical for hardware protection on the auxiliary unit.",
+    },
+    "ha_basics": [
+        {
+            "title": "One Licence, Two Firewalls",
+            "description": "In an HA pair, subscriptions only need to be purchased for the primary unit. The auxiliary (passive) firewall automatically receives the same licence entitlements. There is no need to purchase a second set of security subscriptions.",
+            "icon": "\U0001F4B0",
+        },
+        {
+            "title": "Identical Hardware Required",
+            "description": "Both firewalls in an HA pair must be the same model. You cannot mix different XGS models in a cluster. Quote two identical hardware appliances.",
+            "icon": "\U0001F501",
+        },
+        {
+            "title": "Automatic Failover",
+            "description": "If the primary firewall fails, the auxiliary unit takes over seamlessly. No manual intervention required. Stateful failover preserves active connections.",
+            "icon": "\u26A1",
+        },
+    ],
+    "support_comparison": {
+        "title": "Why Enhanced Support Plus Matters for HA",
+        "description": "The key difference between Enhanced Support and Enhanced Support Plus is how the auxiliary (passive) unit is covered for hardware replacement.",
+        "tiers": [
+            {
+                "name": "Enhanced Support",
+                "level": "standard",
+                "rma_primary": "10/5 advance replacement (next business day, business hours)",
+                "rma_auxiliary": "No advance replacement \u2014 return-and-replace only (can take 1\u20132 weeks)",
+                "risk": "If the primary fails and the auxiliary takes over, you have no spare. If the auxiliary then fails too, you have no firewall at all while waiting for a replacement. Extended downtime risk.",
+            },
+            {
+                "name": "Enhanced Support Plus",
+                "level": "plus",
+                "rma_primary": "24/7 advance replacement (next business day, around the clock)",
+                "rma_auxiliary": "Enhanced RMA \u2014 advance replacement for the auxiliary unit as well",
+                "risk": "Both units are covered with advance replacement. If either unit fails, a replacement is dispatched immediately, maintaining HA resilience at all times.",
+            },
+        ],
+    },
+    "quoting_checklist": [
+        {
+            "item": "Quote two identical XGS hardware appliances",
+            "detail": "Both units must be the same model for HA to function.",
+        },
+        {
+            "item": "Quote one set of subscriptions only",
+            "detail": "Security subscriptions (Standard or Xstream Protection) only need to be on the primary unit. The auxiliary inherits the licence.",
+        },
+        {
+            "item": "Always recommend Xstream Protection or Enhanced Support Plus",
+            "detail": "Xstream Protection includes Enhanced Support Plus by default. If the customer insists on Standard Protection, strongly recommend adding Enhanced Support Plus as an upgrade to cover the auxiliary unit\u2019s RMA.",
+        },
+        {
+            "item": "Explain the HA RMA gap to the customer",
+            "detail": "Make the customer aware that without Enhanced Support Plus, their auxiliary firewall only gets return-and-replace RMA \u2014 meaning if it fails, they could wait 1\u20132 weeks for a replacement, leaving them without HA protection.",
+        },
+        {
+            "item": "Position HA as business continuity insurance",
+            "detail": "HA isn\u2019t just about uptime \u2014 it\u2019s about ensuring the business never goes unprotected. Enhanced Support Plus ensures the insurance policy itself is protected.",
+        },
+    ],
+    "talk_track": {
+        "title": "Suggested Talk Track",
+        "paragraphs": [
+            "When you deploy two firewalls in HA, you\u2019re making a smart investment in business continuity. The good news is you only need one set of subscriptions \u2014 so the second appliance is essentially just the cost of the hardware.",
+            "However, there\u2019s an important consideration around support. With standard Enhanced Support, only the primary firewall gets advance hardware replacement. The auxiliary unit \u2014 the one that\u2019s keeping your network running if the primary fails \u2014 only gets return-and-replace. That means if it fails, you could be waiting up to two weeks for a replacement, during which time you have no HA protection.",
+            "With Enhanced Support Plus, both firewalls get advance replacement. So if either unit fails, a replacement is on its way immediately. For the relatively small uplift in cost, you\u2019re ensuring your HA investment is fully protected. That\u2019s why we always recommend Xstream Protection for HA deployments \u2014 it includes Enhanced Support Plus as standard.",
+        ],
+    },
+}
+
 TAKEAWAYS = [
     {
         "title": "Best Raw Throughput",
