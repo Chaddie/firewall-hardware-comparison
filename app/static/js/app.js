@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderHardwareTiers();
   renderFeatures();
   renderTakeaways();
+  initChat();
   showTab("overview");
 });
 
@@ -38,6 +39,7 @@ async function loadData() {
 // ── Navigation ──
 function initNav() {
   document.querySelectorAll(".main-nav button").forEach((btn) => {
+    if (btn.dataset.tab === "ask") return; // handled by initChat
     btn.addEventListener("click", () => showTab(btn.dataset.tab));
   });
 }
@@ -236,6 +238,152 @@ function renderTakeaways() {
     });
     grid.appendChild(card);
   }
+}
+
+// ── AI Chat ──
+const chat = {
+  history: [],
+  busy: false,
+};
+
+function initChat() {
+  const fab = document.getElementById("chat-fab");
+  const panel = document.getElementById("chat-panel");
+  const input = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("chat-send");
+  const clearBtn = document.getElementById("chat-clear");
+
+  fab.addEventListener("click", () => {
+    const open = panel.classList.toggle("open");
+    fab.classList.toggle("open", open);
+    if (open) input.focus();
+  });
+
+  sendBtn.addEventListener("click", () => sendMessage());
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    chat.history = [];
+    const msgs = document.getElementById("chat-messages");
+    msgs.innerHTML = `<div class="chat-msg assistant"><p>Chat cleared. Ask me anything about firewall hardware!</p></div>`;
+    document.getElementById("chat-suggestions").style.display = "flex";
+  });
+
+  document.querySelectorAll(".chat-suggestion").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      input.value = btn.textContent;
+      sendMessage();
+    });
+  });
+
+  // "Ask AI" nav button opens the chat panel
+  document.querySelector('[data-tab="ask"]')?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!panel.classList.contains("open")) {
+      panel.classList.add("open");
+      fab.classList.add("open");
+    }
+    input.focus();
+  });
+}
+
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text || chat.busy) return;
+
+  chat.busy = true;
+  input.value = "";
+  document.getElementById("chat-send").disabled = true;
+  document.getElementById("chat-suggestions").style.display = "none";
+
+  appendMsg("user", text);
+  chat.history.push({ role: "user", content: text });
+
+  const typingEl = showTyping();
+
+  try {
+    const supabaseUrl = window.SUPABASE_URL;
+    const supabaseKey = window.SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || supabaseUrl === "YOUR_SUPABASE_URL") {
+      throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in index.html.");
+    }
+
+    const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseKey}`,
+        apikey: supabaseKey,
+      },
+      body: JSON.stringify({
+        message: text,
+        history: chat.history.slice(-10),
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Request failed (${res.status})`);
+    }
+
+    const data = await res.json();
+    typingEl.remove();
+    appendMsg("assistant", data.reply);
+    chat.history.push({ role: "assistant", content: data.reply });
+  } catch (err) {
+    typingEl.remove();
+    appendMsg("error", err.message);
+  } finally {
+    chat.busy = false;
+    document.getElementById("chat-send").disabled = false;
+  }
+}
+
+function appendMsg(role, content) {
+  const container = document.getElementById("chat-messages");
+  const msg = document.createElement("div");
+  msg.className = `chat-msg ${role}`;
+
+  if (role === "assistant") {
+    msg.innerHTML = markdownToHtml(content);
+  } else {
+    msg.textContent = content;
+  }
+
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById("chat-messages");
+  const typing = document.createElement("div");
+  typing.className = "chat-typing";
+  typing.innerHTML = "<span></span><span></span><span></span>";
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+  return typing;
+}
+
+function markdownToHtml(md) {
+  return md
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/^[-*] (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+    .replace(/\n{2,}/g, "</p><p>")
+    .replace(/\n/g, "<br>")
+    .replace(/^(.+)$/, "<p>$1</p>");
 }
 
 // ── Helpers ──

@@ -17,6 +17,7 @@
         <button data-tab="hardware">Hardware Specs</button>
         <button data-tab="features">Features</button>
         <button data-tab="takeaways">Key Takeaways</button>
+        <button data-tab="ask" class="nav-ai-btn">Ask AI</button>
       </nav>
     </div>
   </header>
@@ -76,6 +77,36 @@
     <p>Data is approximate and based on publicly available vendor datasheets as of early 2026. Always verify with the vendor for the latest specifications.</p>
   </footer>
 
+  <!-- Chat widget -->
+  <button class="chat-fab" id="chat-fab" aria-label="Open AI chat">&#x2728;</button>
+
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+      <h3>Firewall AI Assistant</h3>
+      <button id="chat-clear" title="Clear chat">&#x1f5d1;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg assistant">
+        <p>Hi! I can answer questions about firewall hardware from Palo Alto, Fortinet, Cisco, Check Point, and Sophos. What would you like to know?</p>
+      </div>
+    </div>
+    <div class="chat-suggestions" id="chat-suggestions">
+      <button class="chat-suggestion">Which firewall has the best throughput?</button>
+      <button class="chat-suggestion">Compare Palo Alto vs Fortinet</button>
+      <button class="chat-suggestion">Best firewall for a small office?</button>
+      <button class="chat-suggestion">Who has the best SD-WAN?</button>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="Ask about firewalls..." autocomplete="off" />
+      <button id="chat-send" aria-label="Send">&#x27A4;</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Configuration: set your Supabase project details here ──
+    window.SUPABASE_URL = "https://kavmeqdgbsvnemlymszn.supabase.co";
+    window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthdm1lcWRnYnN2bmVtbHltc3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMzA2MzgsImV4cCI6MjA4ODgwNjYzOH0.cJnA0CguAIp_ih1F823on-X4cgToOgnafUw4R93J2m8";
+  </script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
