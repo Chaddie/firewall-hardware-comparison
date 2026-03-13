@@ -808,6 +808,126 @@ tbody tr.dimmed { opacity: .15 }
 .all-clear h3 { font-size: 1.3rem; margin-bottom: .5rem }
 .all-clear p { color: var(--text-muted); font-size: .9rem }
 
+/* ── Executive Summary Text ── */
+.exec-summary-text {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+.exec-summary-text p {
+  color: var(--text-muted);
+  font-size: .9rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Status Badges ── */
+.status-badge {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+}
+.status-pass {
+  background: rgba(39, 174, 96, .14);
+  color: var(--green);
+}
+.status-fail {
+  background: rgba(255, 107, 107, .14);
+  color: var(--red);
+}
+.status-na {
+  background: rgba(139, 143, 164, .12);
+  color: var(--text-muted);
+}
+
+/* ── Exec card header row ── */
+.exec-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .75rem;
+  margin-bottom: .4rem;
+}
+.exec-card-header h4 { margin: 0 }
+.exec-card-tags {
+  display: flex;
+  gap: .4rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* Green bar for in-place items */
+.severity-pass { background: var(--green) }
+
+/* ── PDF button ── */
+.btn-pdf {
+  padding: .65rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-pdf:hover {
+  background: rgba(0,91,172,.1);
+  transform: translateY(-1px);
+}
+
+/* ── Resources Section ── */
+.resources-section { margin-top: .5rem }
+.resources-intro {
+  color: var(--text-muted);
+  font-size: .9rem;
+  margin-bottom: 1.25rem;
+}
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.resource-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.resource-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,91,172,.12);
+}
+.resource-card h4 {
+  font-size: .95rem;
+  margin-bottom: .4rem;
+  color: var(--accent);
+}
+.resource-card p {
+  font-size: .84rem;
+  color: var(--text-muted);
+  flex: 1;
+  margin-bottom: .75rem;
+}
+.resource-card .resource-link {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 /* ══════════════════════════════════════
    COMPETITIVE TAKEDOWN
    ══════════════════════════════════════ */
@@ -1249,11 +1369,12 @@ tbody tr.dimmed { opacity: .15 }
 /* Bundle comparison table */
 .lic-comparison { margin-bottom: 3rem; }
 .lic-comparison h3 { text-align: center; margin-bottom: 1.5rem; font-size: 1.3rem; }
-.lic-comp-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border-radius: 12px; overflow: hidden; }
+.lic-comp-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; }
 .lic-comp-table th, .lic-comp-table td { padding: .85rem 1.2rem; text-align: left; font-size: .9rem; vertical-align: middle; }
-.lic-comp-table th { background: rgba(0,91,172,.15); font-weight: 700; color: var(--text); border-bottom: 2px solid var(--border); }
+.lic-comp-table th { background: rgba(0,91,172,.15); font-weight: 700; color: var(--text); border-bottom: 2px solid var(--border); text-transform: uppercase; font-size: .78rem; letter-spacing: .5px; }
 .lic-comp-table td { border-bottom: 1px solid var(--border); }
-.lic-comp-table th:not(:first-child), .lic-comp-table td:not(:first-child) { text-align: center; width: 140px; }
+.lic-comp-table th:first-child, .lic-comp-table td:first-child { width: 60%; }
+.lic-comp-table th:not(:first-child), .lic-comp-table td:not(:first-child) { text-align: center; width: 20%; }
 .lic-comp-table tbody tr:last-child td { border-bottom: none; }
 .lic-check, .lic-cross { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; font-weight: 700; font-size: 1rem; line-height: 1; border-radius: 50%; }
 .lic-check { color: #fff; background: #22c55e; }
@@ -1450,7 +1571,14 @@ tbody tr.dimmed { opacity: .15 }
 
 /* Solution summary */
 .smap-summary { animation: fadeIn .3s ease; }
-.smap-summary h3 { text-align: center; font-size: 1.3rem; margin-bottom: 1.5rem; }
+.smap-summary h3 { text-align: center; font-size: 1.3rem; margin-bottom: .5rem; }
+.smap-count {
+  text-align: center;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
 .smap-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
 .smap-rec-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);

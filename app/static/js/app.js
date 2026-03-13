@@ -393,19 +393,50 @@ function renderWizardStep() {
   });
 }
 
+function buildExecSummaryText(score, gradeText, passed, answered, gaps, naItems) {
+  const total = passed.length + gaps.length + naItems.length;
+  let text = `A health check assessment was conducted across ${total} key areas of firewall best practice. `;
+  text += `Of the ${answered.length} applicable checks, ${passed.length} were found to be in place and ${gaps.length} require attention`;
+  if (naItems.length > 0) text += ` (${naItems.length} were not applicable)`;
+  text += `. `;
+
+  if (score >= 90) {
+    text += `Overall, the firewall security posture is rated as ${gradeText} (${score}%). The environment demonstrates strong alignment with Sophos best practices. `;
+  } else if (score >= 70) {
+    text += `Overall, the firewall security posture is rated as ${gradeText} (${score}%). While a solid foundation is in place, there are areas that would benefit from improvement. `;
+  } else if (score >= 50) {
+    text += `Overall, the firewall security posture is rated as ${gradeText} (${score}%). Several important security controls are missing and should be addressed as a priority. `;
+  } else {
+    text += `Overall, the firewall security posture is rated as ${gradeText} (${score}%). Significant gaps exist in the current configuration that expose the organisation to material risk. Immediate remediation is strongly recommended. `;
+  }
+
+  if (gaps.length > 0) {
+    const criticalGaps = gaps.filter(g => g.severity === "critical");
+    const highGaps = gaps.filter(g => g.severity === "high");
+    if (criticalGaps.length > 0) {
+      text += `Critical items requiring immediate attention: ${criticalGaps.map(g => g.category).join(", ")}. `;
+    }
+    if (highGaps.length > 0) {
+      text += `High-priority items: ${highGaps.map(g => g.category).join(", ")}. `;
+    }
+  }
+
+  return text;
+}
+
 function renderHealthCheckReport() {
   const container = document.getElementById("hc-wizard");
   const questions = state.healthcheck.questions;
+  const resources = state.healthcheck.resources || [];
 
-  const gaps = questions.filter(
-    (q) => state.hcAnswers[q.id] === "no"
-  );
+  const gaps = questions.filter((q) => state.hcAnswers[q.id] === "no");
+  const passedItems = questions.filter((q) => state.hcAnswers[q.id] === "yes");
+  const naItems = questions.filter((q) => state.hcAnswers[q.id] === "na");
   const answered = questions.filter((q) => state.hcAnswers[q.id] !== "na");
-  const passed = answered.filter((q) => state.hcAnswers[q.id] === "yes");
-  const score = answered.length > 0 ? Math.round((passed.length / answered.length) * 100) : 100;
+  const score = answered.length > 0 ? Math.round((passedItems.length / answered.length) * 100) : 100;
 
   const severityOrder = { critical: 0, high: 1, medium: 2 };
-  gaps.sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
+  const allSorted = [...questions].sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
 
   let gradeClass, gradeText, ringClass;
   if (score >= 90) { gradeClass = "grade-perfect"; gradeText = "Excellent"; ringClass = "fill-perfect"; }
@@ -416,7 +447,9 @@ function renderHealthCheckReport() {
   const circumference = 2 * Math.PI * 65;
   const dashOffset = circumference - (score / 100) * circumference;
 
-  let html = `<div class="report-container"><div class="wizard-container">`;
+  if (!state.hcReportView) state.hcReportView = "exec";
+
+  let html = `<div class="report-container"><div class="wizard-container" style="max-width:780px">`;
 
   html += `
     <div class="score-section">
@@ -430,66 +463,90 @@ function renderHealthCheckReport() {
         </svg>
         <div class="score-label">
           <div class="score-num">${score}%</div>
-          <div class="score-den">${passed.length}/${answered.length} passed</div>
+          <div class="score-den">${passedItems.length}/${answered.length} passed</div>
         </div>
       </div>
       <div class="score-grade ${gradeClass}">${gradeText}</div>
     </div>
   `;
 
-  if (gaps.length === 0) {
-    html += `
-      <div class="all-clear">
-        <h3>All checks passed!</h3>
-        <p>Your firewall configuration follows all assessed best practices. Keep it up.</p>
-      </div>
-    `;
-  } else {
-    html += `
-      <div class="report-toggle">
-        <button class="${state.hcReportView === 'exec' ? 'active' : ''}" data-view="exec">Executive Summary</button>
-        <button class="${state.hcReportView === 'tech' ? 'active' : ''}" data-view="tech">Technical Details</button>
-      </div>
-    `;
+  const execSummaryText = buildExecSummaryText(score, gradeText, passedItems, answered, gaps, naItems);
+  html += `<div class="exec-summary-text"><p>${execSummaryText}</p></div>`;
 
-    if (state.hcReportView === "exec") {
-      html += `<div class="exec-cards">`;
-      for (const g of gaps) {
-        html += `
-          <div class="exec-card">
-            <div class="severity-bar severity-${g.severity}"></div>
-            <div class="exec-card-body">
-              <h4>${g.category}</h4>
-              <span class="severity-tag tag-${g.severity}">${g.severity}</span>
-              <p>${g.exec_summary}</p>
+  html += `
+    <div class="report-toggle">
+      <button class="${state.hcReportView === 'exec' ? 'active' : ''}" data-view="exec">Executive Summary</button>
+      <button class="${state.hcReportView === 'tech' ? 'active' : ''}" data-view="tech">Technical Details</button>
+      <button class="${state.hcReportView === 'resources' ? 'active' : ''}" data-view="resources">Resources</button>
+    </div>
+  `;
+
+  if (state.hcReportView === "exec") {
+    html += `<div class="exec-cards">`;
+    for (const q of allSorted) {
+      const answer = state.hcAnswers[q.id];
+      const statusClass = answer === "yes" ? "status-pass" : answer === "no" ? "status-fail" : "status-na";
+      const statusLabel = answer === "yes" ? "In Place" : answer === "no" ? "Not In Place" : "N/A";
+      const borderClass = answer === "yes" ? "severity-pass" : `severity-${q.severity}`;
+      html += `
+        <div class="exec-card">
+          <div class="severity-bar ${borderClass}"></div>
+          <div class="exec-card-body">
+            <div class="exec-card-header">
+              <h4>${q.category}</h4>
+              <div class="exec-card-tags">
+                <span class="status-badge ${statusClass}">${statusLabel}</span>
+                <span class="severity-tag tag-${q.severity}">${q.severity}</span>
+              </div>
             </div>
+            <p>${q.exec_summary}</p>
+            ${q.extra_link_url ? `<a class="doc-link" href="${q.extra_link_url}" target="_blank" rel="noopener">&#x1F517; ${q.extra_link_title}</a>` : ""}
           </div>
-        `;
-      }
-      html += `</div>`;
-    } else {
-      html += `<div class="tech-accordion">`;
-      for (const g of gaps) {
-        html += `
-          <div class="tech-item">
-            <div class="tech-item-header">
-              <h4>
-                <span class="severity-tag tag-${g.severity}">${g.severity}</span>
-                ${g.category}
-              </h4>
-              <span class="chevron">&#x25BC;</span>
-            </div>
-            <div class="tech-item-body">
-              <p>${g.tech_detail}</p>
-              <a class="doc-link" href="${g.sophos_doc_url}" target="_blank" rel="noopener">
-                &#x1F4D6; ${g.sophos_doc_title}
-              </a>
-            </div>
-          </div>
-        `;
-      }
-      html += `</div>`;
+        </div>
+      `;
     }
+    html += `</div>`;
+  } else if (state.hcReportView === "tech") {
+    html += `<div class="tech-accordion">`;
+    for (const q of allSorted) {
+      const answer = state.hcAnswers[q.id];
+      const statusClass = answer === "yes" ? "status-pass" : answer === "no" ? "status-fail" : "status-na";
+      const statusLabel = answer === "yes" ? "In Place" : answer === "no" ? "Not In Place" : "N/A";
+      html += `
+        <div class="tech-item">
+          <div class="tech-item-header">
+            <h4>
+              <span class="status-badge ${statusClass}">${statusLabel}</span>
+              <span class="severity-tag tag-${q.severity}">${q.severity}</span>
+              ${q.category}
+            </h4>
+            <span class="chevron">&#x25BC;</span>
+          </div>
+          <div class="tech-item-body">
+            <p>${q.tech_detail}</p>
+            <a class="doc-link" href="${q.sophos_doc_url}" target="_blank" rel="noopener">
+              &#x1F4D6; ${q.sophos_doc_title}
+            </a>
+            ${q.extra_link_url ? `<br><a class="doc-link" href="${q.extra_link_url}" target="_blank" rel="noopener" style="margin-top:.5rem;display:inline-flex">&#x1F517; ${q.extra_link_title}</a>` : ""}
+          </div>
+        </div>
+      `;
+    }
+    html += `</div>`;
+  } else if (state.hcReportView === "resources") {
+    html += `<div class="resources-section">`;
+    html += `<p class="resources-intro">The following resources provide additional guidance on Sophos Firewall configuration, hardening, and best practices.</p>`;
+    html += `<div class="resources-grid">`;
+    for (const r of resources) {
+      html += `
+        <a class="resource-card" href="${r.url}" target="_blank" rel="noopener">
+          <h4>${r.title}</h4>
+          <p>${r.description}</p>
+          <span class="resource-link">Visit &rarr;</span>
+        </a>
+      `;
+    }
+    html += `</div></div>`;
   }
 
   html += `
@@ -520,90 +577,205 @@ function renderHealthCheckReport() {
   });
 
   document.getElementById("hc-pdf-btn")?.addEventListener("click", () => {
-    generateHealthCheckPDF(gaps, score, gradeText, passed, answered);
+    generateHealthCheckPDF(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText);
   });
 }
 
-function generateHealthCheckPDF(gaps, score, gradeText, passed, answered) {
+function generateHealthCheckPDF(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  const contentW = pageW - margin * 2;
   let y = 20;
 
+  function checkPage(needed) {
+    if (y + needed > pageH - 15) { doc.addPage(); y = 20; }
+  }
+
+  // --- Header ---
   doc.setFillColor(0, 91, 172);
-  doc.rect(0, 0, pageW, 35, "F");
+  doc.rect(0, 0, pageW, 38, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont(undefined, "bold");
-  doc.text("Sophos Firewall Health Check Report", 14, 16);
+  doc.text("Sophos Firewall Health Check Report", margin, 16);
   doc.setFontSize(10);
   doc.setFont(undefined, "normal");
-  doc.text(new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }), 14, 26);
-  doc.text(`Score: ${score}% (${gradeText}) \u2014 ${passed.length}/${answered.length} checks passed`, 14, 32);
+  doc.text("Follow-Up Notes and Recommendations", margin, 24);
+  doc.text(new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }), margin, 32);
+  doc.text(`Score: ${score}% (${gradeText}) \u2014 ${passedItems.length}/${answered.length} checks passed`, pageW - margin - doc.getTextWidth(`Score: ${score}% (${gradeText}) \u2014 ${passedItems.length}/${answered.length} checks passed`), 32);
 
-  y = 45;
+  y = 48;
   doc.setTextColor(0, 0, 0);
 
-  if (gaps.length === 0) {
-    doc.setFontSize(14);
+  // --- Executive Summary ---
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text("Executive Summary", margin, y);
+  y += 8;
+  doc.setFontSize(9);
+  doc.setFont(undefined, "normal");
+  doc.setTextColor(60, 60, 60);
+  const summaryLines = doc.splitTextToSize(execSummaryText, contentW);
+  doc.text(summaryLines, margin, y);
+  y += summaryLines.length * 4.5 + 6;
+
+  // --- Status Summary Table ---
+  checkPage(30);
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.text("Assessment Overview", margin, y);
+  y += 4;
+
+  const tableRows = allSorted.map(q => {
+    const answer = state.hcAnswers[q.id];
+    const status = answer === "yes" ? "In Place" : answer === "no" ? "Not In Place" : "N/A";
+    return [q.category, q.severity.charAt(0).toUpperCase() + q.severity.slice(1), status];
+  });
+
+  doc.autoTable({
+    startY: y,
+    head: [["Category", "Severity", "Status"]],
+    body: tableRows,
+    margin: { left: margin, right: margin },
+    styles: { fontSize: 8.5, cellPadding: 3 },
+    headStyles: { fillColor: [0, 91, 172], textColor: 255, fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: contentW * 0.5 },
+      1: { cellWidth: contentW * 0.2, halign: "center" },
+      2: { cellWidth: contentW * 0.3, halign: "center" },
+    },
+    didParseCell: function(data) {
+      if (data.section === "body" && data.column.index === 2) {
+        const val = data.cell.raw;
+        if (val === "In Place") {
+          data.cell.styles.textColor = [39, 174, 96];
+          data.cell.styles.fontStyle = "bold";
+        } else if (val === "Not In Place") {
+          data.cell.styles.textColor = [214, 48, 49];
+          data.cell.styles.fontStyle = "bold";
+        } else {
+          data.cell.styles.textColor = [140, 140, 140];
+        }
+      }
+    },
+  });
+
+  y = doc.lastAutoTable.finalY + 10;
+
+  // --- Detailed Recommendations ---
+  checkPage(20);
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Detailed Recommendations", margin, y);
+  y += 10;
+
+  for (const q of allSorted) {
+    const answer = state.hcAnswers[q.id];
+    const status = answer === "yes" ? "IN PLACE" : answer === "no" ? "NOT IN PLACE" : "N/A";
+    const statusColor = answer === "yes" ? [39, 174, 96] : answer === "no" ? [214, 48, 49] : [140, 140, 140];
+    const sevColor = q.severity === "critical" ? [214, 48, 49] : q.severity === "high" ? [224, 120, 0] : [0, 91, 172];
+
+    const summaryTextLines = doc.splitTextToSize(q.exec_summary, contentW - 6);
+    let blockHeight = 22 + summaryTextLines.length * 4;
+    if (answer === "no") {
+      const techLines = doc.splitTextToSize(q.tech_detail, contentW - 6);
+      blockHeight += 12 + techLines.length * 4 + 8;
+    }
+    checkPage(blockHeight);
+
+    // Severity color bar
+    doc.setFillColor(...sevColor);
+    doc.rect(margin, y - 3, 3, 8, "F");
+
+    // Category title
+    doc.setFontSize(11);
     doc.setFont(undefined, "bold");
-    doc.text("All checks passed!", 14, y);
-    y += 10;
-    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(q.category, margin + 6, y + 2);
+
+    // Status + severity labels
+    const catWidth = doc.getTextWidth(q.category);
+    doc.setFontSize(8);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(...statusColor);
+    doc.text(`[${status}]`, margin + 6 + catWidth + 4, y + 2);
+    const statusWidth = doc.getTextWidth(`[${status}]`);
+    doc.setTextColor(...sevColor);
+    doc.text(`[${q.severity.toUpperCase()}]`, margin + 6 + catWidth + 4 + statusWidth + 3, y + 2);
+    y += 9;
+
+    // Exec summary
+    doc.setFontSize(9);
     doc.setFont(undefined, "normal");
-    doc.text("Your firewall configuration follows all assessed best practices.", 14, y);
-  } else {
-    doc.setFontSize(14);
-    doc.setFont(undefined, "bold");
-    doc.text("Executive Summary", 14, y);
-    y += 8;
+    doc.setTextColor(60, 60, 60);
+    doc.text(summaryTextLines, margin + 3, y);
+    y += summaryTextLines.length * 4 + 2;
 
-    for (const g of gaps) {
-      if (y > 270) { doc.addPage(); y = 20; }
-      const sevColor = g.severity === "critical" ? [214, 48, 49] : g.severity === "high" ? [224, 120, 0] : [0, 91, 172];
-      doc.setFillColor(...sevColor);
-      doc.rect(14, y - 3, 3, 18, "F");
-
-      doc.setFontSize(11);
-      doc.setFont(undefined, "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.text(`${g.category}  [${g.severity.toUpperCase()}]`, 20, y + 2);
+    // Technical detail & doc link (only for gaps)
+    if (answer === "no") {
+      checkPage(20);
       doc.setFontSize(9);
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(0, 91, 172);
+      doc.text("Remediation:", margin + 3, y);
+      y += 5;
       doc.setFont(undefined, "normal");
-      doc.setTextColor(80, 80, 80);
-      const lines = doc.splitTextToSize(g.exec_summary, pageW - 34);
-      doc.text(lines, 20, y + 9);
-      y += 14 + lines.length * 4.5;
+      doc.setTextColor(60, 60, 60);
+      const techLines = doc.splitTextToSize(q.tech_detail, contentW - 6);
+      doc.text(techLines, margin + 3, y);
+      y += techLines.length * 4 + 2;
+
+      doc.setTextColor(0, 91, 172);
+      doc.textWithLink(q.sophos_doc_title, margin + 3, y, { url: q.sophos_doc_url });
+      y += 5;
+      if (q.extra_link_url) {
+        doc.textWithLink(q.extra_link_title, margin + 3, y, { url: q.extra_link_url });
+        y += 5;
+      }
+      doc.setTextColor(0, 0, 0);
     }
 
-    if (y > 240) { doc.addPage(); y = 20; }
     y += 6;
+  }
+
+  // --- Resources ---
+  if (resources && resources.length > 0) {
+    checkPage(30);
     doc.setFontSize(14);
     doc.setFont(undefined, "bold");
     doc.setTextColor(0, 0, 0);
-    doc.text("Technical Details & Remediation", 14, y);
+    doc.text("Resources", margin, y);
     y += 8;
 
-    for (const g of gaps) {
-      if (y > 250) { doc.addPage(); y = 20; }
-      doc.setFontSize(11);
+    for (const r of resources) {
+      checkPage(16);
+      doc.setFontSize(10);
       doc.setFont(undefined, "bold");
       doc.setTextColor(0, 91, 172);
-      doc.text(g.category, 14, y);
-      y += 6;
-
-      doc.setFontSize(9);
+      doc.textWithLink(r.title, margin, y, { url: r.url });
+      y += 5;
+      doc.setFontSize(8.5);
       doc.setFont(undefined, "normal");
-      doc.setTextColor(60, 60, 60);
-      const techLines = doc.splitTextToSize(g.tech_detail, pageW - 28);
-      doc.text(techLines, 14, y);
-      y += techLines.length * 4.5 + 2;
-
-      doc.setTextColor(0, 91, 172);
-      doc.textWithLink(g.sophos_doc_title, 14, y, { url: g.sophos_doc_url });
-      y += 10;
-      doc.setTextColor(0, 0, 0);
+      doc.setTextColor(80, 80, 80);
+      doc.text(r.description, margin, y);
+      y += 8;
     }
+  }
+
+  // --- Footer on all pages ---
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(160, 160, 160);
+    doc.text(`Sophos Firewall Health Check Report \u2014 Page ${i} of ${totalPages}`, margin, pageH - 8);
+    doc.text("Generated by Sophos Networking Portfolio Toolkit", pageW - margin - doc.getTextWidth("Generated by Sophos Networking Portfolio Toolkit"), pageH - 8);
   }
 
   doc.save("Sophos_Firewall_HealthCheck_Report.pdf");
@@ -1331,6 +1503,7 @@ function renderSolutionSummary(container) {
 
   let html = '<div class="smap-summary">';
   html += "<h3>Recommended Sophos Solution</h3>";
+  html += `<div class="smap-count">${cards.length} product${cards.length !== 1 ? "s" : ""} recommended</div>`;
 
   if (a.remote_access === "vpn") {
     html += `<div class="smap-upsell">
