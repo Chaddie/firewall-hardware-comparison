@@ -552,6 +552,7 @@ function renderHealthCheckReport() {
   html += `
     <div style="text-align:center;margin-top:2rem;display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap">
       <button class="btn-pdf" id="hc-pdf-btn">&#128196; Download PDF Report</button>
+      <button class="btn-email" id="hc-email-btn">&#9993; Email Template</button>
       <button class="btn-primary" id="hc-restart-btn">Restart Health Check</button>
     </div>
   `;
@@ -578,6 +579,177 @@ function renderHealthCheckReport() {
 
   document.getElementById("hc-pdf-btn")?.addEventListener("click", () => {
     generateHealthCheckPDF(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText);
+  });
+
+  document.getElementById("hc-email-btn")?.addEventListener("click", () => {
+    showEmailTemplateModal(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText);
+  });
+}
+
+function showEmailTemplateModal(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText) {
+  const existing = document.getElementById("email-template-modal");
+  if (existing) existing.remove();
+
+  const severityOrder = { critical: 0, high: 1, medium: 2 };
+  const criticalGaps = gaps.filter(g => g.severity === "critical");
+  const highGaps = gaps.filter(g => g.severity === "high");
+  const mediumGaps = gaps.filter(g => g.severity === "medium");
+
+  let body = "";
+  body += "Hi [Customer Name],\n\n";
+  body += "Thank you for taking the time to go through the Sophos Firewall Health Check with us. Please find the full report attached as a PDF.\n\n";
+
+  body += "─────────────────────────────────\n";
+  body += "HEALTH CHECK SUMMARY\n";
+  body += "─────────────────────────────────\n\n";
+
+  body += `Score: ${score}% (${gradeText})\n`;
+  body += `Checks passed: ${passedItems.length} of ${answered.length} applicable items\n`;
+  if (naItems.length > 0) body += `Not applicable: ${naItems.length}\n`;
+  body += `Areas requiring attention: ${gaps.length}\n\n`;
+
+  if (gaps.length > 0) {
+    body += "─────────────────────────────────\n";
+    body += "KEY FINDINGS\n";
+    body += "─────────────────────────────────\n\n";
+
+    if (criticalGaps.length > 0) {
+      body += "Critical priority:\n";
+      criticalGaps.forEach(g => { body += `  • ${g.category}\n`; });
+      body += "\n";
+    }
+    if (highGaps.length > 0) {
+      body += "High priority:\n";
+      highGaps.forEach(g => { body += `  • ${g.category}\n`; });
+      body += "\n";
+    }
+    if (mediumGaps.length > 0) {
+      body += "Medium priority:\n";
+      mediumGaps.forEach(g => { body += `  • ${g.category}\n`; });
+      body += "\n";
+    }
+
+    body += "Full details and remediation steps for each item are included in the attached PDF report.\n\n";
+  }
+
+  if (passedItems.length > 0) {
+    body += "─────────────────────────────────\n";
+    body += "WHAT'S ALREADY IN PLACE\n";
+    body += "─────────────────────────────────\n\n";
+    const passedSorted = [...passedItems].sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
+    passedSorted.forEach(g => { body += `  ✓ ${g.category}\n`; });
+    body += "\n";
+  }
+
+  body += "─────────────────────────────────\n";
+  body += "RECOMMENDED NEXT STEPS\n";
+  body += "─────────────────────────────────\n\n";
+
+  if (gaps.length === 0) {
+    body += "Your firewall configuration aligns well with Sophos best practices. We recommend continuing to review these settings periodically, especially after firmware upgrades or significant network changes.\n\n";
+  } else {
+    body += "We would recommend scheduling a follow-up session to work through the items identified above. ";
+    if (criticalGaps.length > 0) {
+      body += "The critical-priority items should be addressed as soon as possible as they represent the highest risk to the environment. ";
+    }
+    body += "We're happy to assist with implementation and can walk through each recommendation in detail.\n\n";
+  }
+
+  const relevantResources = [];
+  if (resources && resources.length > 0) {
+    resources.forEach(r => relevantResources.push(r));
+  }
+
+  const gapResourceMap = {};
+  gaps.forEach(g => {
+    if (g.sophos_doc_url) {
+      gapResourceMap[g.sophos_doc_title || g.category] = g.sophos_doc_url;
+    }
+    if (g.extra_link_url) {
+      gapResourceMap[g.extra_link_title || g.category + " (additional)"] = g.extra_link_url;
+    }
+  });
+
+  body += "─────────────────────────────────\n";
+  body += "USEFUL RESOURCES\n";
+  body += "─────────────────────────────────\n\n";
+
+  if (Object.keys(gapResourceMap).length > 0) {
+    body += "Related to your findings:\n";
+    for (const [title, url] of Object.entries(gapResourceMap)) {
+      body += `  • ${title}\n    ${url}\n`;
+    }
+    body += "\n";
+  }
+
+  if (relevantResources.length > 0) {
+    body += "General Sophos Firewall resources:\n";
+    relevantResources.forEach(r => {
+      body += `  • ${r.title} – ${r.description}\n    ${r.url}\n`;
+    });
+    body += "\n";
+  }
+
+  body += "─────────────────────────────────\n\n";
+  body += "If you have any questions about the report or would like to discuss the findings further, please don't hesitate to get in touch.\n\n";
+  body += "Kind regards,\n";
+  body += "[Your Name]\n";
+  body += "[Your Title / Role]\n";
+  body += "[Your Contact Information]\n";
+
+  const subjectLine = `Sophos Firewall Health Check Report – ${gradeText} (${score}%)`;
+
+  const modal = document.createElement("div");
+  modal.id = "email-template-modal";
+  modal.className = "email-modal-overlay";
+  modal.innerHTML = `
+    <div class="email-modal">
+      <div class="email-modal-header">
+        <h3>Email Template</h3>
+        <button class="email-modal-close" title="Close">&times;</button>
+      </div>
+      <div class="email-modal-body">
+        <label class="email-field-label">Subject</label>
+        <input type="text" class="email-subject-input" id="email-subject" value="${subjectLine.replace(/"/g, '&quot;')}" readonly />
+        <label class="email-field-label">Body</label>
+        <textarea class="email-body-textarea" id="email-body" readonly>${body.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+      </div>
+      <div class="email-modal-footer">
+        <button class="btn-email" id="email-copy-subject">Copy Subject</button>
+        <button class="btn-email" id="email-copy-body">Copy Body</button>
+        <button class="btn-primary" id="email-copy-all">Copy All</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector(".email-modal-close").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", function escHandler(e) {
+    if (e.key === "Escape") { closeModal(); document.removeEventListener("keydown", escHandler); }
+  });
+
+  const flashCopied = (btn, original) => {
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  };
+
+  document.getElementById("email-copy-subject").addEventListener("click", function () {
+    navigator.clipboard.writeText(document.getElementById("email-subject").value);
+    flashCopied(this, "Copy Subject");
+  });
+
+  document.getElementById("email-copy-body").addEventListener("click", function () {
+    navigator.clipboard.writeText(body);
+    flashCopied(this, "Copy Body");
+  });
+
+  document.getElementById("email-copy-all").addEventListener("click", function () {
+    const full = "Subject: " + document.getElementById("email-subject").value + "\n\n" + body;
+    navigator.clipboard.writeText(full);
+    flashCopied(this, "Copy All");
   });
 }
 
