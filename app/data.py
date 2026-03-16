@@ -467,6 +467,7 @@ HEALTHCHECK_DATA = {
             "sophos_doc_title": "SSL/TLS Inspection Rules \u2014 Sophos Firewall Docs",
             "extra_link_url": "https://transparencyreport.google.com/https/overview",
             "extra_link_title": "Google HTTPS Transparency Report",
+            "ui_nav": "Rules and policies > SSL/TLS inspection rules",
         },
         {
             "id": "app_control",
@@ -478,6 +479,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure Application Control under Rules & Policies > Firewall Rules in Sophos Firewall. Edit each relevant rule and under the Security Features section, apply an Application Control policy. Create policies that block or log high-risk application categories including P2P, anonymisers/proxies, remote access tools, GenAI services, and file-sharing/uploading applications. Use the Application Filter to identify and categorise applications by risk level and business relevance.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Applications/index.html",
             "sophos_doc_title": "Application Control \u2014 Sophos Firewall Docs",
+            "ui_nav": "Rules and policies > Firewall rules > (edit rule) > Security features > Application control",
         },
         {
             "id": "admin_mfa",
@@ -489,6 +491,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure MFA using one-time passwords (OTP) under Authentication > Multi-factor Authentication in Sophos Firewall. Create an OTP token for each admin user and enforce OTP sign-in for the WebAdmin and CLI interfaces. Sophos supports standard TOTP tokens compatible with Google Authenticator, Microsoft Authenticator, or any RFC 6238\u2013compliant app.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Authentication/OneTimePassword/index.html",
             "sophos_doc_title": "Multi-factor Authentication \u2014 Sophos Firewall Docs",
+            "ui_nav": "Authentication > One-time password",
         },
         {
             "id": "firmware",
@@ -500,6 +503,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Check your current firmware under System > Administration > Firmware in Sophos Firewall. Download the latest SFOS version from MySophos, schedule a maintenance window, and apply the update. Use the dual-image feature to keep a rollback option. Enable automatic update checks under Backup & Firmware > Firmware to receive notifications when new versions are available. SFOS v22 is currently being staged to customers and will be available shortly.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/BackupAndFirmware/Firmware/index.html",
             "sophos_doc_title": "Firmware Management \u2014 Sophos Firewall Docs",
+            "ui_nav": "Backup and firmware > Firmware",
         },
         {
             "id": "network_segmentation",
@@ -511,6 +515,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Create separate zones in Sophos Firewall under System > Network > Zones for each logical segment (e.g. LAN_Users, LAN_Servers, IoT, Guest). Assign the relevant interfaces or VLANs to each zone. Create inter-zone firewall rules that only permit the minimum required traffic between segments. Use Sophos Synchronized Security to automatically isolate compromised endpoints at the zone level.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Network/Zones/index.html",
             "sophos_doc_title": "Zones \u2014 Sophos Firewall Docs",
+            "ui_nav": "Network > Zones",
         },
         {
             "id": "logging_siem",
@@ -522,6 +527,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure syslog forwarding under System Services > Log Settings in Sophos Firewall. Add your SIEM server as a syslog target using TCP or UDP (TCP recommended for reliability). Select the log categories to forward (Security, Firewall, IPS, Web Filter, etc.). For deeper integration, use the Sophos Central Data Lake which automatically ingests firewall logs for XDR correlation.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/SystemServices/LogSettings/index.html",
             "sophos_doc_title": "Log Settings \u2014 Sophos Firewall Docs",
+            "ui_nav": "System services > Log settings",
         },
         {
             "id": "ips_enabled",
@@ -533,6 +539,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Enable IPS by applying an IPS policy to your firewall rules under Rules & Policies > Firewall Rules. Edit each relevant rule and under the Security Features section, toggle on the IPS policy. Use the \u2018landesk_default\u2019 or \u2018recommended\u2019 policy as a starting point, then tune based on your environment. Review IPS logs regularly under Log Viewer > IPS to identify and address false positives.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/IntrusionPrevention/index.html",
             "sophos_doc_title": "Intrusion Prevention \u2014 Sophos Firewall Docs",
+            "ui_nav": "Rules and policies > Firewall rules > (edit rule) > Security features > Intrusion prevention",
         },
         {
             "id": "web_filtering",
@@ -544,6 +551,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure web filtering under Web > Policies in Sophos Firewall. Create policies for each user group (e.g. Standard Users, IT Staff, Guests) with appropriate category blocks. At minimum, block categories: Malware, Phishing, Spam URLs, Anonymisers/Proxies, and Command & Control. Apply the policies to your firewall rules under the Web Filtering section. Enable SafeSearch enforcement for search engines.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Web/index.html",
             "sophos_doc_title": "Web Protection \u2014 Sophos Firewall Docs",
+            "ui_nav": "Web > Policies",
         },
         {
             "id": "dns_resolution",
@@ -555,6 +563,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure the Sophos Firewall as the primary DNS server for client devices via DHCP settings on your DHCP server or directly in the firewall\u2019s DHCP configuration. Ensure the firewall\u2019s DNS settings are configured to forward queries to appropriate upstream resolvers. Update any static DNS entries on servers or critical infrastructure. Verify that Active Directory-joined devices can still resolve internal AD DNS records by configuring conditional forwarding on the firewall for your AD domain zones.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Network/DNS/index.html",
             "sophos_doc_title": "DNS Configuration \u2014 Sophos Firewall Docs",
+            "ui_nav": "Network > DNS",
         },
         {
             "id": "dns_protection",
@@ -566,6 +575,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Enable Sophos DNS Protection from Sophos Central under My Products > DNS Protection. Configure the firewall or endpoint DNS settings to point to the Sophos DNS Protection resolvers. Define policies to sinkhole DNS requests by web category (e.g. malware, phishing, C2) and optionally block uncategorised domains. Enable safe search enforcement for Google, Bing, YouTube, and other major search engines. Monitor blocked queries via the Sophos Central dashboard.",
             "sophos_doc_url": "https://docs.sophos.com/central/customer/help/en-us/ManageYourProducts/DNSProtection/",
             "sophos_doc_title": "DNS Protection \u2014 Sophos Central Docs",
+            "ui_nav": "Sophos Central > My Products > DNS Protection",
         },
         {
             "id": "backups",
@@ -577,6 +587,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Schedule automated backups under Backup & Firmware > Backup & Restore in Sophos Firewall. Configure daily backups to be sent via email or uploaded to FTP/SFTP. Enable encryption for backup files. Additionally, configure Sophos Central backup which automatically stores the latest configuration in the cloud. Test restoring a backup periodically to validate the process.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/BackupAndFirmware/BackupAndRestore/index.html",
             "sophos_doc_title": "Backup & Restore \u2014 Sophos Firewall Docs",
+            "ui_nav": "Backup and firmware > Backup and restore",
         },
         {
             "id": "rule_hygiene",
@@ -588,6 +599,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Review firewall rules under Rules & Policies > Firewall Rules in Sophos Firewall. Sort or filter by the traffic indicators \u2014 rules showing 0 bytes / 0 connections are candidates for disabling. For NAT rules, check under Rules & Policies > NAT Rules and identify rules with 0 matches. Disable rather than delete initially, monitor for any impact over a defined period (e.g. 30 days), then remove once confident. Document any rules disabled with the reason and date for audit trail purposes.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/RulesAndPolicies/FirewallRules/index.html",
             "sophos_doc_title": "Firewall Rules \u2014 Sophos Firewall Docs",
+            "ui_nav": "Rules and policies > Firewall rules (review traffic counters) & Rules and policies > NAT rules",
         },
         {
             "id": "ztna_vpn",
@@ -599,6 +611,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Deploy Sophos ZTNA through Sophos Central. Install the ZTNA agent on endpoints and configure application-level access policies. For each application, define who can access it and under what conditions (device compliance, user group, location). ZTNA gateways can be deployed on the firewall or as standalone VMs. For organisations transitioning gradually, Sophos Firewall also supports modern SSL VPN and IPsec configurations.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/RemoteAccessVPN/index.html",
             "sophos_doc_title": "VPN & ZTNA \u2014 Sophos Firewall Docs",
+            "ui_nav": "Remote access VPN > IPsec / SSL VPN & Sophos Central > ZTNA",
         },
         {
             "id": "sdwan",
@@ -610,6 +623,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure SD-WAN profiles under Routing > SD-WAN Profiles in Sophos Firewall. Create profiles that define link selection strategies (e.g. lowest latency for VoIP, highest bandwidth for bulk transfers). Assign up to eight gateways per profile and configure SLA thresholds for latency, jitter, and packet loss. Set health check targets (ping, TCP, HTTP) to enable automatic failover. Create SD-WAN routes under Routing > SD-WAN Routes and assign the appropriate profile. Use SLA-based routing to guarantee quality for critical applications.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Routing/SDWANRoutes/SDWANProfiles/index.html",
             "sophos_doc_title": "SD-WAN Profiles \u2014 Sophos Firewall Docs",
+            "ui_nav": "Routing > SD-WAN routes & Routing > SD-WAN profiles",
         },
         {
             "id": "auth_ldaps",
@@ -621,6 +635,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "In Sophos Firewall, navigate to Authentication > Servers and edit your Active Directory server configuration. Change the connection type from LDAP to LDAPS and update the port from 389 to 636. You will need to import the domain controller\u2019s CA certificate (or the issuing CA certificate) into the firewall\u2019s trusted CA store to validate the LDAPS connection. Test the connection after making the change to confirm authentication works correctly over the encrypted channel.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Authentication/Servers/index.html",
             "sophos_doc_title": "Authentication Servers \u2014 Sophos Firewall Docs",
+            "ui_nav": "Authentication > Servers > (edit AD server) > Connection security: LDAPS, Port: 636",
         },
         {
             "id": "entraid_sso",
@@ -632,6 +647,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure EntraID SSO for the Sophos Connect client by registering the Sophos Firewall as an application in Microsoft Entra ID (Azure AD). Configure the SAML or OpenID Connect integration in the firewall under Authentication settings. Deploy the Sophos Connect client to endpoints and configure it to use the EntraID SSO authentication method. Refer to the Sophos setup guide for step-by-step instructions.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/RemoteAccessVPN/IPsecSSL/SophosConnect/index.html",
             "sophos_doc_title": "Sophos Connect VPN \u2014 Sophos Firewall Docs",
+            "ui_nav": "Authentication > Servers > Microsoft Entra ID & Remote access VPN > IPsec / SSL VPN",
         },
         {
             "id": "vpn_user_mfa",
@@ -643,6 +659,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Configure MFA for VPN users under Authentication > Multi-factor Authentication (OTP) in Sophos Firewall. Enable one-time password (OTP) tokens for all users or groups that connect via SSL VPN or IPsec remote access. Users will need to enrol a TOTP authenticator app (e.g. Google Authenticator, Microsoft Authenticator) by scanning the QR code from the VPN portal. Ensure the OTP sign-in is enforced for the VPN Portal and SSL VPN services under Authentication > Services. For environments using Microsoft Entra ID SSO, MFA can be enforced via Entra ID Conditional Access policies instead.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/Help/en-us/webhelp/onlinehelp/AdministratorHelp/Authentication/OneTimePassword/index.html",
             "sophos_doc_title": "One-Time Password (MFA) \u2014 Sophos Firewall Docs",
+            "ui_nav": "Authentication > One-time password & Authentication > Services (enforce OTP for VPN Portal / SSL VPN)",
         },
         {
             "id": "xstream_licensing",
@@ -654,6 +671,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Check your current licensing status under Administration > Licensing in Sophos Firewall, or via Sophos Central under Licensing > Firewall Licenses. If currently on Standard Protection, upgrading to Xstream Protection can be done through your Sophos partner \u2014 a mid-term upgrade is possible with credit for the remaining Standard subscription. Key additional features unlocked by Xstream include: Zero-Day Protection (Sandstorm) for cloud sandboxing of suspicious files, Sophos DNS Protection for DNS-layer security, MDR Connector for managed threat intelligence feeds, and NDR Essentials for network detection and response. Once licensed, enable Zero-Day Protection on your firewall rules under Security Features, configure DNS Protection in Sophos Central, and enable the MDR threat feed under Active Threat Response.",
             "sophos_doc_url": "https://docs.sophos.com/central/customer/help/en-us/LicensingGuide/FirewallLicenses/SFOSLicensingModel/",
             "sophos_doc_title": "SFOS Licensing Model \u2014 Sophos Central Docs",
+            "ui_nav": "Administration > Licensing & Sophos Central > Licensing > Firewall Licenses",
         },
         {
             "id": "system_resources",
@@ -665,6 +683,7 @@ HEALTHCHECK_DATA = {
             "tech_detail": "Monitor CPU and memory usage on the Control Center dashboard in Sophos Firewall \u2014 the System widget shows real-time utilisation with colour-coded severity (grey below 80%, amber at 80\u201390%, red above 90%). For historical trends, use the Sophos Central Report Hub or configure SNMP monitoring to track usage over time. If utilisation is consistently high, review the following: check which security features are enabled and their impact (TLS inspection and IPS are CPU-intensive), review the number of concurrent connections and throughput, check for any misconfigured rules or traffic loops, and assess whether the appliance model is appropriately sized for the network workload. If the appliance is consistently at capacity, consider upgrading to a higher-specification XGS model or offloading certain traffic inspection to dedicated appliances.",
             "sophos_doc_url": "https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/AdministratorHelp/ControlCenter/ControlCenterSystem/",
             "sophos_doc_title": "System (Control Center) \u2014 Sophos Firewall Docs",
+            "ui_nav": "Control center > System widget (CPU & Memory counters)",
         },
     ],
     "resources": [

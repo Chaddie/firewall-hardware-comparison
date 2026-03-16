@@ -394,7 +394,7 @@ function renderWizardStep() {
       </div>
       <div class="wizard-question-card">
         <div class="wizard-category">${q.category}</div>
-        <h3>${q.question}</h3>
+        <h3>${q.question}${q.ui_nav ? `<span class="wizard-tooltip-wrap"><span class="wizard-tooltip-icon" tabindex="0">&#9432;</span><span class="wizard-tooltip"><strong>Where to find this:</strong><br>${q.ui_nav}</span></span>` : ""}</h3>
         <p class="wizard-context">${q.context}</p>
         <div class="wizard-answers">
           <button class="btn-yes" data-answer="yes">Yes</button>
