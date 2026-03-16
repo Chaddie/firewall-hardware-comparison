@@ -10,6 +10,7 @@ const state = {
   activeVendors: new Set(),
   activeTab: "overview",
   hcAnswers: {},
+  hcDetails: { customerName: "", salesEngineer: "", stakeholder: "", firewallModel: "" },
   hcStep: 0,
   hcDone: false,
   hcReportView: "exec",
@@ -332,16 +333,41 @@ function renderHealthCheckStart() {
   state.hcStep = 0;
   state.hcDone = false;
 
+  const d = state.hcDetails;
   container.innerHTML = `
     <div class="wizard-start">
-      <p>This wizard walks through ${state.healthcheck.questions.length} key areas of firewall best practice.
+      <p>This wizard walks through <strong>${state.healthcheck.questions.length} key areas</strong> of firewall best practice.
          Answer each question honestly and receive a tailored report with executive-level justifications
          and detailed technical remediation steps linked to Sophos documentation.</p>
+      <div class="hc-details-form">
+        <h4>Customer Details</h4>
+        <div class="hc-details-grid">
+          <label for="hc-customer-name">Customer Name <span class="hc-required">*</span></label>
+          <input type="text" id="hc-customer-name" placeholder="e.g. Acme Corporation" value="${d.customerName.replace(/"/g, '&quot;')}" />
+          <label for="hc-se-name">Sales Engineer Name</label>
+          <input type="text" id="hc-se-name" placeholder="e.g. John Smith" value="${d.salesEngineer.replace(/"/g, '&quot;')}" />
+          <label for="hc-stakeholder">Stakeholder Name</label>
+          <input type="text" id="hc-stakeholder" placeholder="e.g. Jane Doe (IT Manager)" value="${d.stakeholder.replace(/"/g, '&quot;')}" />
+          <label for="hc-fw-model">Sophos Firewall Model</label>
+          <input type="text" id="hc-fw-model" placeholder="e.g. XGS 4300" value="${d.firewallModel.replace(/"/g, '&quot;')}" />
+        </div>
+        <p class="hc-details-hint">These details will appear in the report and email template.</p>
+      </div>
       <button class="btn-primary" id="hc-start-btn">Start Health Check</button>
     </div>
   `;
 
   document.getElementById("hc-start-btn").addEventListener("click", () => {
+    const name = document.getElementById("hc-customer-name").value.trim();
+    if (!name) {
+      document.getElementById("hc-customer-name").style.borderColor = "#dc2626";
+      document.getElementById("hc-customer-name").focus();
+      return;
+    }
+    state.hcDetails.customerName = name;
+    state.hcDetails.salesEngineer = document.getElementById("hc-se-name").value.trim();
+    state.hcDetails.stakeholder = document.getElementById("hc-stakeholder").value.trim();
+    state.hcDetails.firewallModel = document.getElementById("hc-fw-model").value.trim();
     state.hcStep = 0;
     state.hcAnswers = {};
     renderWizardStep();
@@ -449,7 +475,16 @@ function renderHealthCheckReport() {
 
   if (!state.hcReportView) state.hcReportView = "exec";
 
+  const det = state.hcDetails;
   let html = `<div class="report-container"><div class="wizard-container" style="max-width:780px">`;
+
+  html += `<div class="hc-report-details">`;
+  html += `<div class="hc-report-details-row"><span class="hc-detail-label">Customer</span><span class="hc-detail-value">${det.customerName || "—"}</span></div>`;
+  if (det.stakeholder) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Stakeholder</span><span class="hc-detail-value">${det.stakeholder}</span></div>`;
+  if (det.salesEngineer) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Sales Engineer</span><span class="hc-detail-value">${det.salesEngineer}</span></div>`;
+  if (det.firewallModel) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Firewall Model</span><span class="hc-detail-value">${det.firewallModel}</span></div>`;
+  html += `<div class="hc-report-details-row"><span class="hc-detail-label">Date</span><span class="hc-detail-value">${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span></div>`;
+  html += `</div>`;
 
   html += `
     <div class="score-section">
@@ -590,114 +625,113 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
   const existing = document.getElementById("email-template-modal");
   if (existing) existing.remove();
 
+  const det = state.hcDetails;
+  const customerName = det.customerName || "[Customer Name]";
+  const stakeholderName = det.stakeholder || "[Stakeholder Name]";
+  const seName = det.salesEngineer || "[Your Name]";
+  const fwModel = det.firewallModel || "";
+  const reportDate = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
   const severityOrder = { critical: 0, high: 1, medium: 2 };
   const criticalGaps = gaps.filter(g => g.severity === "critical");
   const highGaps = gaps.filter(g => g.severity === "high");
   const mediumGaps = gaps.filter(g => g.severity === "medium");
 
-  let body = "";
-  body += "Hi [Customer Name],\n\n";
-  body += "Thank you for taking the time to go through the Sophos Firewall Health Check with us. Please find the full report attached as a PDF.\n\n";
+  const scoreColour = score >= 90 ? "#16a34a" : score >= 70 ? "#2563eb" : score >= 50 ? "#d97706" : "#dc2626";
 
-  body += "─────────────────────────────────\n";
-  body += "HEALTH CHECK SUMMARY\n";
-  body += "─────────────────────────────────\n\n";
+  let h = "";
+  h += `<p>Hi <strong>${stakeholderName}</strong>,</p>`;
+  h += `<p>Thank you for taking the time to go through the <strong>Sophos Firewall Health Check</strong> with us. Please find the full report attached as a PDF.</p>`;
 
-  body += `Score: ${score}% (${gradeText})\n`;
-  body += `Checks passed: ${passedItems.length} of ${answered.length} applicable items\n`;
-  if (naItems.length > 0) body += `Not applicable: ${naItems.length}\n`;
-  body += `Areas requiring attention: ${gaps.length}\n\n`;
+  h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
+  h += `<h3 style="margin:0 0 12px;color:#1a1a2e">Health Check Summary</h3>`;
+  h += `<table style="border-collapse:collapse;margin-bottom:16px">`;
+  h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Customer</td><td style="padding:4px 0"><strong>${customerName}</strong></td></tr>`;
+  if (fwModel) h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Firewall Model</td><td style="padding:4px 0">${fwModel}</td></tr>`;
+  h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Date</td><td style="padding:4px 0">${reportDate}</td></tr>`;
+  h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Score</td><td style="padding:4px 0"><strong style="color:${scoreColour}">${score}% (${gradeText})</strong></td></tr>`;
+  h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Checks passed</td><td style="padding:4px 0">${passedItems.length} of ${answered.length} applicable items</td></tr>`;
+  if (naItems.length > 0) h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Not applicable</td><td style="padding:4px 0">${naItems.length}</td></tr>`;
+  h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Areas requiring attention</td><td style="padding:4px 0"><strong>${gaps.length}</strong></td></tr>`;
+  h += `</table>`;
 
   if (gaps.length > 0) {
-    body += "─────────────────────────────────\n";
-    body += "KEY FINDINGS\n";
-    body += "─────────────────────────────────\n\n";
+    h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
+    h += `<h3 style="margin:0 0 12px;color:#1a1a2e">Key Findings</h3>`;
 
-    if (criticalGaps.length > 0) {
-      body += "Critical priority:\n";
-      criticalGaps.forEach(g => { body += `  • ${g.category}\n`; });
-      body += "\n";
-    }
-    if (highGaps.length > 0) {
-      body += "High priority:\n";
-      highGaps.forEach(g => { body += `  • ${g.category}\n`; });
-      body += "\n";
-    }
-    if (mediumGaps.length > 0) {
-      body += "Medium priority:\n";
-      mediumGaps.forEach(g => { body += `  • ${g.category}\n`; });
-      body += "\n";
-    }
+    const renderGapList = (label, colour, items) => {
+      if (items.length === 0) return "";
+      let s = `<p style="margin:0 0 6px"><strong style="color:${colour}">${label}:</strong></p><ul style="margin:0 0 14px;padding-left:24px">`;
+      items.forEach(g => {
+        s += `<li style="margin-bottom:3px">${g.category}`;
+        if (g.sophos_doc_url) s += ` — <a href="${g.sophos_doc_url}" style="color:#005bac">${g.sophos_doc_title || "Sophos Docs"}</a>`;
+        s += `</li>`;
+      });
+      s += `</ul>`;
+      return s;
+    };
 
-    body += "Full details and remediation steps for each item are included in the attached PDF report.\n\n";
+    h += renderGapList("Critical priority", "#dc2626", criticalGaps);
+    h += renderGapList("High priority", "#d97706", highGaps);
+    h += renderGapList("Medium priority", "#2563eb", mediumGaps);
+
+    h += `<p>Full details and remediation steps for each item are included in the attached PDF report.</p>`;
   }
 
   if (passedItems.length > 0) {
-    body += "─────────────────────────────────\n";
-    body += "WHAT'S ALREADY IN PLACE\n";
-    body += "─────────────────────────────────\n\n";
+    h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
+    h += `<h3 style="margin:0 0 12px;color:#1a1a2e">What's Already in Place</h3>`;
+    h += `<ul style="margin:0 0 14px;padding-left:24px">`;
     const passedSorted = [...passedItems].sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
-    passedSorted.forEach(g => { body += `  ✓ ${g.category}\n`; });
-    body += "\n";
+    passedSorted.forEach(g => { h += `<li style="margin-bottom:3px;color:#16a34a"><span style="color:#333">✓ ${g.category}</span></li>`; });
+    h += `</ul>`;
   }
 
-  body += "─────────────────────────────────\n";
-  body += "RECOMMENDED NEXT STEPS\n";
-  body += "─────────────────────────────────\n\n";
+  h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
+  h += `<h3 style="margin:0 0 12px;color:#1a1a2e">Recommended Next Steps</h3>`;
 
   if (gaps.length === 0) {
-    body += "Your firewall configuration aligns well with Sophos best practices. We recommend continuing to review these settings periodically, especially after firmware upgrades or significant network changes.\n\n";
+    h += `<p>Your firewall configuration aligns well with Sophos best practices. We recommend continuing to review these settings periodically, especially after firmware upgrades or significant network changes.</p>`;
   } else {
-    body += "We would recommend scheduling a follow-up session to work through the items identified above. ";
+    let nextSteps = `We would recommend scheduling a <strong>follow-up session</strong> to work through the items identified above. `;
     if (criticalGaps.length > 0) {
-      body += "The critical-priority items should be addressed as soon as possible as they represent the highest risk to the environment. ";
+      nextSteps += `The <strong>critical-priority items should be addressed as soon as possible</strong> as they represent the highest risk to the environment. `;
     }
-    body += "We're happy to assist with implementation and can walk through each recommendation in detail.\n\n";
+    nextSteps += `We're happy to assist with implementation and can walk through each recommendation in detail.`;
+    h += `<p>${nextSteps}</p>`;
   }
 
-  const relevantResources = [];
-  if (resources && resources.length > 0) {
-    resources.forEach(r => relevantResources.push(r));
-  }
+  h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
+  h += `<h3 style="margin:0 0 12px;color:#1a1a2e">Useful Resources</h3>`;
 
-  const gapResourceMap = {};
-  gaps.forEach(g => {
-    if (g.sophos_doc_url) {
-      gapResourceMap[g.sophos_doc_title || g.category] = g.sophos_doc_url;
-    }
-    if (g.extra_link_url) {
-      gapResourceMap[g.extra_link_title || g.category + " (additional)"] = g.extra_link_url;
-    }
-  });
-
-  body += "─────────────────────────────────\n";
-  body += "USEFUL RESOURCES\n";
-  body += "─────────────────────────────────\n\n";
-
-  if (Object.keys(gapResourceMap).length > 0) {
-    body += "Related to your findings:\n";
-    for (const [title, url] of Object.entries(gapResourceMap)) {
-      body += `  • ${title}\n    ${url}\n`;
-    }
-    body += "\n";
-  }
-
-  if (relevantResources.length > 0) {
-    body += "General Sophos Firewall resources:\n";
-    relevantResources.forEach(r => {
-      body += `  • ${r.title} – ${r.description}\n    ${r.url}\n`;
+  if (gaps.length > 0) {
+    h += `<p style="margin:0 0 8px"><strong>Related to your findings:</strong></p>`;
+    h += `<ul style="margin:0 0 16px;padding-left:24px">`;
+    gaps.forEach(g => {
+      if (g.sophos_doc_url) {
+        h += `<li style="margin-bottom:4px"><a href="${g.sophos_doc_url}" style="color:#005bac;font-weight:600">${g.sophos_doc_title || g.category}</a></li>`;
+      }
+      if (g.extra_link_url) {
+        h += `<li style="margin-bottom:4px"><a href="${g.extra_link_url}" style="color:#005bac;font-weight:600">${g.extra_link_title || g.category}</a></li>`;
+      }
     });
-    body += "\n";
+    h += `</ul>`;
   }
 
-  body += "─────────────────────────────────\n\n";
-  body += "If you have any questions about the report or would like to discuss the findings further, please don't hesitate to get in touch.\n\n";
-  body += "Kind regards,\n";
-  body += "[Your Name]\n";
-  body += "[Your Title / Role]\n";
-  body += "[Your Contact Information]\n";
+  if (resources && resources.length > 0) {
+    h += `<p style="margin:0 0 8px"><strong>General Sophos Firewall resources:</strong></p>`;
+    h += `<ul style="margin:0 0 16px;padding-left:24px">`;
+    resources.forEach(r => {
+      h += `<li style="margin-bottom:4px"><a href="${r.url}" style="color:#005bac;font-weight:600">${r.title}</a> — ${r.description}</li>`;
+    });
+    h += `</ul>`;
+  }
 
-  const subjectLine = `Sophos Firewall Health Check Report – ${gradeText} (${score}%)`;
+  h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
+  h += `<p>If you have any questions about the report or would like to discuss the findings further, please don't hesitate to get in touch.</p>`;
+  h += `<p>Kind regards,<br><strong>${seName}</strong><br>[Your Title / Role]<br>[Your Contact Information]</p>`;
+
+  const subjectLine = `Sophos Firewall Health Check Report \u2013 ${customerName}`;
 
   const modal = document.createElement("div");
   modal.id = "email-template-modal";
@@ -711,13 +745,12 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
       <div class="email-modal-body">
         <label class="email-field-label">Subject</label>
         <input type="text" class="email-subject-input" id="email-subject" value="${subjectLine.replace(/"/g, '&quot;')}" readonly />
-        <label class="email-field-label">Body</label>
-        <textarea class="email-body-textarea" id="email-body" readonly>${body.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+        <label class="email-field-label">Body <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.78rem;color:#888">(preview — copy preserves formatting)</span></label>
+        <div class="email-body-preview" id="email-body-preview">${h}</div>
       </div>
       <div class="email-modal-footer">
         <button class="btn-email" id="email-copy-subject">Copy Subject</button>
-        <button class="btn-email" id="email-copy-body">Copy Body</button>
-        <button class="btn-primary" id="email-copy-all">Copy All</button>
+        <button class="btn-primary" id="email-copy-body">Copy Email Body</button>
       </div>
     </div>
   `;
@@ -732,7 +765,7 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
   });
 
   const flashCopied = (btn, original) => {
-    btn.textContent = "✓ Copied!";
+    btn.innerHTML = "&#10003; Copied!";
     setTimeout(() => { btn.textContent = original; }, 2000);
   };
 
@@ -742,14 +775,15 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
   });
 
   document.getElementById("email-copy-body").addEventListener("click", function () {
-    navigator.clipboard.writeText(body);
-    flashCopied(this, "Copy Body");
-  });
-
-  document.getElementById("email-copy-all").addEventListener("click", function () {
-    const full = "Subject: " + document.getElementById("email-subject").value + "\n\n" + body;
-    navigator.clipboard.writeText(full);
-    flashCopied(this, "Copy All");
+    const blob = new Blob([h], { type: "text/html" });
+    const plainBlob = new Blob([document.getElementById("email-body-preview").innerText], { type: "text/plain" });
+    const item = new ClipboardItem({
+      "text/html": blob,
+      "text/plain": plainBlob
+    });
+    navigator.clipboard.write([item]).then(() => {
+      flashCopied(this, "Copy Email Body");
+    });
   });
 }
 
