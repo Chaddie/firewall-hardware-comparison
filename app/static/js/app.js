@@ -1881,7 +1881,7 @@ function initChat() {
   clearBtn.addEventListener("click", () => {
     chat.history = [];
     const msgs = document.getElementById("chat-messages");
-    msgs.innerHTML = `<div class="chat-msg assistant"><p>Chat cleared. Ask me anything about the Sophos networking portfolio (firewall, switches, wireless, SD-RED, ZTNA).</p></div>`;
+    msgs.innerHTML = `<div class="chat-msg assistant"><p>Chat cleared. Ask me anything about the Sophos networking portfolio: firewalls (XGS), switches, wireless (AP6), SD-RED, ZTNA, or workspace protection.</p></div>`;
     document.getElementById("chat-suggestions").style.display = "flex";
   });
 
