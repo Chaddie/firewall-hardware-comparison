@@ -10,7 +10,7 @@ const state = {
   activeVendors: new Set(),
   activeTab: "overview",
   hcAnswers: {},
-  hcDetails: { customerName: "", salesEngineer: "", stakeholder: "", firewallModel: "" },
+  hcDetails: { customerName: "", salesEngineer: "", stakeholder: "", firewallModel: "", serialNumber: "" },
   hcStep: 0,
   hcDone: false,
   hcReportView: "exec",
@@ -195,6 +195,10 @@ function renderOverviewHub() {
     <div class="hub-welcome">
       <h2>Welcome to the Sophos Sales Toolkit</h2>
       <p>Everything you need to position, sell, and configure Sophos networking solutions. Pick a section below to get started.</p>
+      <div class="hub-sophos-stack">
+        <h3>Sophos networking stack</h3>
+        <p><strong>Sophos Firewall (XGS)</strong> — Next-generation firewalls with Xstream Flow Processor, TLS inspection, SD-WAN, and Synchronized Security. <strong>Sophos Switches</strong> — Managed Layer 2 switches in non-PoE and PoE versions (100, 200, and 1000 Series), VLAN segmentation, and unified management in Sophos Central alongside firewalls and wireless. <strong>Sophos Wireless (AP6)</strong> — Wi-Fi 6/6E access points (AP6 series) managed from Sophos Central with per-SSID firewall policy, captive portal, and no on-site controller. Firewall, switches, and wireless are designed to work together and are all managed from a single cloud console.</p>
+      </div>
     </div>
     <div class="hub-grid">
   `;
@@ -336,7 +340,7 @@ function renderHealthCheckStart() {
   const d = state.hcDetails;
   container.innerHTML = `
     <div class="wizard-start">
-      <p>This wizard walks through <strong>${state.healthcheck.questions.length} key areas</strong> of firewall best practice.
+      <p>This wizard walks through <strong>up to ${state.healthcheck.questions.length} key areas</strong> of firewall best practice.
          Answer each question honestly and receive a tailored report with executive-level justifications
          and detailed technical remediation steps linked to Sophos documentation.</p>
       <div class="hc-details-form">
@@ -350,6 +354,8 @@ function renderHealthCheckStart() {
           <input type="text" id="hc-stakeholder" placeholder="e.g. Jane Doe (IT Manager)" value="${d.stakeholder.replace(/"/g, '&quot;')}" />
           <label for="hc-fw-model">Sophos Firewall Model</label>
           <input type="text" id="hc-fw-model" placeholder="e.g. XGS 4300" value="${d.firewallModel.replace(/"/g, '&quot;')}" />
+          <label for="hc-serial">Serial Number</label>
+          <input type="text" id="hc-serial" placeholder="e.g. C1234567890ABCDE" value="${d.serialNumber.replace(/"/g, '&quot;')}" />
         </div>
         <p class="hc-details-hint">These details will appear in the report and email template.</p>
       </div>
@@ -368,24 +374,53 @@ function renderHealthCheckStart() {
     state.hcDetails.salesEngineer = document.getElementById("hc-se-name").value.trim();
     state.hcDetails.stakeholder = document.getElementById("hc-stakeholder").value.trim();
     state.hcDetails.firewallModel = document.getElementById("hc-fw-model").value.trim();
+    state.hcDetails.serialNumber = document.getElementById("hc-serial").value.trim();
     state.hcStep = 0;
     state.hcAnswers = {};
     renderWizardStep();
   });
 }
 
+function isQuestionApplicable(q) {
+  if (!q.condition) return true;
+  return state.hcAnswers[q.condition.question_id] === q.condition.answer;
+}
+
+function getActiveQuestions() {
+  return state.healthcheck.questions.filter(q => isQuestionApplicable(q));
+}
+
+function advanceToNextApplicable(fromIndex) {
+  const questions = state.healthcheck.questions;
+  let idx = fromIndex;
+  while (idx < questions.length && !isQuestionApplicable(questions[idx])) {
+    idx++;
+  }
+  return idx;
+}
+
 function renderWizardStep() {
   const container = document.getElementById("hc-wizard");
   const questions = state.healthcheck.questions;
+
+  state.hcStep = advanceToNextApplicable(state.hcStep);
+  if (state.hcStep >= questions.length) {
+    state.hcDone = true;
+    renderHealthCheckReport();
+    return;
+  }
+
   const q = questions[state.hcStep];
-  const total = questions.length;
-  const pct = ((state.hcStep) / total) * 100;
+  const activeQs = getActiveQuestions();
+  const activeIdx = activeQs.indexOf(q);
+  const activeTotal = activeQs.length;
+  const pct = (activeIdx / activeTotal) * 100;
 
   container.innerHTML = `
     <div class="wizard-container">
       <div class="wizard-progress">
         <div class="wizard-progress-header">
-          <span>Step ${state.hcStep + 1} of ${total}</span>
+          <span>Step ${activeIdx + 1} of ${activeTotal}</span>
           <strong>${Math.round(pct)}%</strong>
         </div>
         <div class="progress-track">
@@ -408,13 +443,8 @@ function renderWizardStep() {
   container.querySelectorAll(".wizard-answers button").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.hcAnswers[q.id] = btn.dataset.answer;
-      if (state.hcStep < total - 1) {
-        state.hcStep++;
-        renderWizardStep();
-      } else {
-        state.hcDone = true;
-        renderHealthCheckReport();
-      }
+      state.hcStep++;
+      renderWizardStep();
     });
   });
 }
@@ -455,14 +485,15 @@ function renderHealthCheckReport() {
   const questions = state.healthcheck.questions;
   const resources = state.healthcheck.resources || [];
 
-  const gaps = questions.filter((q) => state.hcAnswers[q.id] === "no");
-  const passedItems = questions.filter((q) => state.hcAnswers[q.id] === "yes");
-  const naItems = questions.filter((q) => state.hcAnswers[q.id] === "na");
-  const answered = questions.filter((q) => state.hcAnswers[q.id] !== "na");
+  const applicableQs = questions.filter(q => q.id in state.hcAnswers);
+  const gaps = applicableQs.filter((q) => state.hcAnswers[q.id] === "no");
+  const passedItems = applicableQs.filter((q) => state.hcAnswers[q.id] === "yes");
+  const naItems = applicableQs.filter((q) => state.hcAnswers[q.id] === "na");
+  const answered = applicableQs.filter((q) => state.hcAnswers[q.id] !== "na");
   const score = answered.length > 0 ? Math.round((passedItems.length / answered.length) * 100) : 100;
 
   const severityOrder = { critical: 0, high: 1, medium: 2 };
-  const allSorted = [...questions].sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
+  const allSorted = [...applicableQs].sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
 
   let gradeClass, gradeText, ringClass;
   if (score >= 90) { gradeClass = "grade-perfect"; gradeText = "Excellent"; ringClass = "fill-perfect"; }
@@ -483,6 +514,7 @@ function renderHealthCheckReport() {
   if (det.stakeholder) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Stakeholder</span><span class="hc-detail-value">${det.stakeholder}</span></div>`;
   if (det.salesEngineer) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Sales Engineer</span><span class="hc-detail-value">${det.salesEngineer}</span></div>`;
   if (det.firewallModel) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Firewall Model</span><span class="hc-detail-value">${det.firewallModel}</span></div>`;
+  if (det.serialNumber) html += `<div class="hc-report-details-row"><span class="hc-detail-label">Serial Number</span><span class="hc-detail-value">${det.serialNumber}</span></div>`;
   html += `<div class="hc-report-details-row"><span class="hc-detail-label">Date</span><span class="hc-detail-value">${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span></div>`;
   html += `</div>`;
 
@@ -588,6 +620,7 @@ function renderHealthCheckReport() {
     <div style="text-align:center;margin-top:2rem;display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap">
       <button class="btn-pdf" id="hc-pdf-btn">&#128196; Download PDF Report</button>
       <button class="btn-email" id="hc-email-btn">&#9993; Email Template</button>
+      <button class="btn-outlook" id="hc-outlook-btn">&#128233; Open in Outlook</button>
       <button class="btn-primary" id="hc-restart-btn">Restart Health Check</button>
     </div>
   `;
@@ -619,17 +652,19 @@ function renderHealthCheckReport() {
   document.getElementById("hc-email-btn")?.addEventListener("click", () => {
     showEmailTemplateModal(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText);
   });
+
+  document.getElementById("hc-outlook-btn")?.addEventListener("click", () => {
+    generateOutlookEml(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText);
+  });
 }
 
-function showEmailTemplateModal(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText) {
-  const existing = document.getElementById("email-template-modal");
-  if (existing) existing.remove();
-
+function buildEmailHtml(score, gradeText, passedItems, answered, gaps, naItems, resources) {
   const det = state.hcDetails;
   const customerName = det.customerName || "[Customer Name]";
   const stakeholderName = det.stakeholder || "[Stakeholder Name]";
   const seName = det.salesEngineer || "[Your Name]";
   const fwModel = det.firewallModel || "";
+  const serialNum = det.serialNumber || "";
   const reportDate = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   const severityOrder = { critical: 0, high: 1, medium: 2 };
@@ -648,6 +683,7 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
   h += `<table style="border-collapse:collapse;margin-bottom:16px">`;
   h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Customer</td><td style="padding:4px 0"><strong>${customerName}</strong></td></tr>`;
   if (fwModel) h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Firewall Model</td><td style="padding:4px 0">${fwModel}</td></tr>`;
+  if (serialNum) h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Serial Number</td><td style="padding:4px 0">${serialNum}</td></tr>`;
   h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Date</td><td style="padding:4px 0">${reportDate}</td></tr>`;
   h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Score</td><td style="padding:4px 0"><strong style="color:${scoreColour}">${score}% (${gradeText})</strong></td></tr>`;
   h += `<tr><td style="padding:4px 16px 4px 0;font-weight:600">Checks passed</td><td style="padding:4px 0">${passedItems.length} of ${answered.length} applicable items</td></tr>`;
@@ -664,7 +700,7 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
       let s = `<p style="margin:0 0 6px"><strong style="color:${colour}">${label}:</strong></p><ul style="margin:0 0 14px;padding-left:24px">`;
       items.forEach(g => {
         s += `<li style="margin-bottom:3px">${g.category}`;
-        if (g.sophos_doc_url) s += ` — <a href="${g.sophos_doc_url}" style="color:#005bac">${g.sophos_doc_title || "Sophos Docs"}</a>`;
+        if (g.sophos_doc_url) s += ` \u2014 <a href="${g.sophos_doc_url}" style="color:#005bac">${g.sophos_doc_title || "Sophos Docs"}</a>`;
         s += `</li>`;
       });
       s += `</ul>`;
@@ -683,7 +719,7 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
     h += `<h3 style="margin:0 0 12px;color:#1a1a2e">What's Already in Place</h3>`;
     h += `<ul style="margin:0 0 14px;padding-left:24px">`;
     const passedSorted = [...passedItems].sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3));
-    passedSorted.forEach(g => { h += `<li style="margin-bottom:3px;color:#16a34a"><span style="color:#333">✓ ${g.category}</span></li>`; });
+    passedSorted.forEach(g => { h += `<li style="margin-bottom:3px;color:#16a34a"><span style="color:#333">\u2713 ${g.category}</span></li>`; });
     h += `</ul>`;
   }
 
@@ -691,13 +727,13 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
   h += `<h3 style="margin:0 0 12px;color:#1a1a2e">Recommended Next Steps</h3>`;
 
   if (gaps.length === 0) {
-    h += `<p>Your firewall configuration aligns well with Sophos best practices. We recommend continuing to review these settings periodically, especially after firmware upgrades or significant network changes.</p>`;
+    h += `<p>Your firewall configuration aligns well with Sophos best practices. We recommend continuing to review these settings periodically, especially after firmware upgrades or significant network changes. <strong>Sophos Professional Services</strong> can assist with future implementation work or health checks if needed.</p>`;
   } else {
     let nextSteps = `We would recommend scheduling a <strong>follow-up session</strong> to work through the items identified above. `;
     if (criticalGaps.length > 0) {
       nextSteps += `The <strong>critical-priority items should be addressed as soon as possible</strong> as they represent the highest risk to the environment. `;
     }
-    nextSteps += `We're happy to assist with implementation and can walk through each recommendation in detail.`;
+    nextSteps += `We\u2019re happy to assist with implementation and can walk through each recommendation in detail. <strong>Sophos Professional Services</strong> are also available to assist with implementation if you would like hands-on support.`;
     h += `<p>${nextSteps}</p>`;
   }
 
@@ -722,16 +758,23 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
     h += `<p style="margin:0 0 8px"><strong>General Sophos Firewall resources:</strong></p>`;
     h += `<ul style="margin:0 0 16px;padding-left:24px">`;
     resources.forEach(r => {
-      h += `<li style="margin-bottom:4px"><a href="${r.url}" style="color:#005bac;font-weight:600">${r.title}</a> — ${r.description}</li>`;
+      h += `<li style="margin-bottom:4px"><a href="${r.url}" style="color:#005bac;font-weight:600">${r.title}</a> \u2014 ${r.description}</li>`;
     });
     h += `</ul>`;
   }
 
   h += `<hr style="border:none;border-top:1px solid #d0d0d0;margin:24px 0 20px">`;
-  h += `<p>If you have any questions about the report or would like to discuss the findings further, please don't hesitate to get in touch.</p>`;
+  h += `<p>If you have any questions about the report or would like to discuss the findings further, please don\u2019t hesitate to get in touch.</p>`;
   h += `<p>Kind regards,<br><strong>${seName}</strong><br>[Your Title / Role]<br>[Your Contact Information]</p>`;
 
-  const subjectLine = `Sophos Firewall Health Check Report \u2013 ${customerName}`;
+  return { html: h, subject: `Sophos Firewall Health Check Report \u2013 ${customerName}` };
+}
+
+function showEmailTemplateModal(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText) {
+  const existing = document.getElementById("email-template-modal");
+  if (existing) existing.remove();
+
+  const { html: h, subject: subjectLine } = buildEmailHtml(score, gradeText, passedItems, answered, gaps, naItems, resources);
 
   const modal = document.createElement("div");
   modal.id = "email-template-modal";
@@ -787,7 +830,59 @@ function showEmailTemplateModal(questions, allSorted, score, gradeText, passedIt
   });
 }
 
-function generateHealthCheckPDF(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText) {
+function generateOutlookEml(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText) {
+  const { html: emailHtml, subject } = buildEmailHtml(score, gradeText, passedItems, answered, gaps, naItems, resources);
+
+  const doc = generateHealthCheckPDF(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText, true);
+  const pdfBase64 = doc.output("datauristring").split(",")[1];
+
+  const boundary = "----=_NextPart_" + Date.now().toString(36);
+  const customerName = state.hcDetails.customerName || "Customer";
+  const filename = `Sophos_Firewall_HealthCheck_Report_${customerName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+
+  const wrappedHtml = `<html><head><meta charset="utf-8"></head><body style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#333">${emailHtml}</body></html>`;
+
+  const lines = [];
+  lines.push(`From: `);
+  lines.push(`To: `);
+  lines.push(`Subject: ${subject}`);
+  lines.push(`MIME-Version: 1.0`);
+  lines.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
+  lines.push(`X-Unsent: 1`);
+  lines.push(``);
+  lines.push(`--${boundary}`);
+  lines.push(`Content-Type: text/html; charset="utf-8"`);
+  lines.push(`Content-Transfer-Encoding: quoted-printable`);
+  lines.push(``);
+  lines.push(wrappedHtml);
+  lines.push(``);
+  lines.push(`--${boundary}`);
+  lines.push(`Content-Type: application/pdf; name="${filename}"`);
+  lines.push(`Content-Transfer-Encoding: base64`);
+  lines.push(`Content-Disposition: attachment; filename="${filename}"`);
+  lines.push(``);
+
+  const chunkSize = 76;
+  for (let i = 0; i < pdfBase64.length; i += chunkSize) {
+    lines.push(pdfBase64.slice(i, i + chunkSize));
+  }
+
+  lines.push(``);
+  lines.push(`--${boundary}--`);
+
+  const emlContent = lines.join("\r\n");
+  const blob = new Blob([emlContent], { type: "message/rfc822" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Health_Check_Report_${customerName.replace(/[^a-zA-Z0-9]/g, "_")}.eml`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function generateHealthCheckPDF(questions, allSorted, score, gradeText, passedItems, answered, gaps, naItems, resources, execSummaryText, returnDoc) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
@@ -810,7 +905,11 @@ function generateHealthCheckPDF(questions, allSorted, score, gradeText, passedIt
   doc.setFontSize(10);
   doc.setFont(undefined, "normal");
   doc.text("Follow-Up Notes and Recommendations", margin, 24);
-  doc.text(new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }), margin, 32);
+  const pdfDet = state.hcDetails;
+  let headerLeft = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  if (pdfDet.customerName) headerLeft = pdfDet.customerName + "  |  " + headerLeft;
+  if (pdfDet.serialNumber) headerLeft += "  |  S/N: " + pdfDet.serialNumber;
+  doc.text(headerLeft, margin, 32);
   doc.text(`Score: ${score}% (${gradeText}) \u2014 ${passedItems.length}/${answered.length} checks passed`, pageW - margin - doc.getTextWidth(`Score: ${score}% (${gradeText}) \u2014 ${passedItems.length}/${answered.length} checks passed`), 32);
 
   y = 48;
@@ -984,6 +1083,7 @@ function generateHealthCheckPDF(questions, allSorted, score, gradeText, passedIt
     doc.text("Generated by Sophos Networking Portfolio Toolkit", pageW - margin - doc.getTextWidth("Generated by Sophos Networking Portfolio Toolkit"), pageH - 8);
   }
 
+  if (returnDoc) return doc;
   doc.save("Sophos_Firewall_HealthCheck_Report.pdf");
 }
 
@@ -1781,7 +1881,7 @@ function initChat() {
   clearBtn.addEventListener("click", () => {
     chat.history = [];
     const msgs = document.getElementById("chat-messages");
-    msgs.innerHTML = `<div class="chat-msg assistant"><p>Chat cleared. Ask me anything about firewall hardware!</p></div>`;
+    msgs.innerHTML = `<div class="chat-msg assistant"><p>Chat cleared. Ask me anything about the Sophos networking portfolio (firewall, switches, wireless, SD-RED, ZTNA).</p></div>`;
     document.getElementById("chat-suggestions").style.display = "flex";
   });
 
