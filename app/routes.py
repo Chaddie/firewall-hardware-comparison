@@ -12,6 +12,7 @@ from .data import (
     TAKEDOWN_DATA,
     VENDORS,
     VERTICALS_DATA,
+    WORKSPACE_PROTECTION_DATA,
 )
 
 main = Blueprint("main", __name__)
@@ -82,3 +83,8 @@ def api_verticals():
 @main.route("/api/solution-map")
 def api_solution_map():
     return jsonify(SOLUTION_MAP_DATA)
+
+
+@main.route("/api/workspace-protection")
+def api_workspace_protection():
+    return jsonify(WORKSPACE_PROTECTION_DATA)

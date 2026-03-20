@@ -29,6 +29,7 @@ const state = {
   smStep: 0,
   smAnswers: {},
   smDone: false,
+  workspaceProtection: {},
 };
 
 // ── Bootstrap ──
@@ -48,6 +49,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderHAGuidePage();
   renderVerticalsPage();
   renderSolutionMapPage();
+  renderDeploymentOptionsPage();
+  renderWorkspaceProtectionPage();
   initChat();
   showTab("overview");
 });
@@ -66,7 +69,7 @@ function initTheme() {
 }
 
 async function loadData() {
-  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide, verticals, solutionMap] = await Promise.all([
+  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide, verticals, solutionMap, workspaceProtection] = await Promise.all([
     fetch("/api/vendors").then((r) => r.json()),
     fetch("/api/hardware").then((r) => r.json()),
     fetch("/api/features").then((r) => r.json()),
@@ -78,6 +81,7 @@ async function loadData() {
     fetch("/api/ha-guide").then((r) => r.json()),
     fetch("/api/verticals").then((r) => r.json()),
     fetch("/api/solution-map").then((r) => r.json()),
+    fetch("/api/workspace-protection").then((r) => r.json()),
   ]);
   state.vendors = vendors;
   state.hardware = hardware;
@@ -90,20 +94,39 @@ async function loadData() {
   state.haGuide = haGuide;
   state.verticals = verticals;
   state.solutionMap = solutionMap;
+  state.workspaceProtection = workspaceProtection;
   Object.keys(vendors).forEach((v) => state.activeVendors.add(v));
 }
 
 // ── Navigation ──
+function closeSidebar() {
+  document.getElementById("app-layout")?.classList.remove("sidebar-open");
+}
+
 function initNav() {
-  document.querySelectorAll(".main-nav button").forEach((btn) => {
+  const selector = ".app-sidebar [data-tab]";
+  document.querySelectorAll(selector).forEach((btn) => {
     if (btn.dataset.tab === "ask") return; // handled by initChat
-    btn.addEventListener("click", () => showTab(btn.dataset.tab));
+    btn.addEventListener("click", () => {
+      showTab(btn.dataset.tab);
+      closeSidebar();
+    });
   });
+
+  const toggle = document.getElementById("sidebar-toggle");
+  const overlay = document.getElementById("sidebar-overlay");
+  const layout = document.getElementById("app-layout");
+  if (toggle && layout) {
+    toggle.addEventListener("click", () => layout.classList.toggle("sidebar-open"));
+  }
+  if (overlay && layout) {
+    overlay.addEventListener("click", closeSidebar);
+  }
 }
 
 function showTab(tab) {
   state.activeTab = tab;
-  document.querySelectorAll(".main-nav button").forEach((b) => {
+  document.querySelectorAll(".app-sidebar [data-tab]").forEach((b) => {
     b.classList.toggle("active", b.dataset.tab === tab);
   });
   document.querySelectorAll(".page-section").forEach((s) => {
@@ -183,12 +206,14 @@ function renderOverviewHub() {
     { tab: "features", icon: "\uD83D\uDD0D", title: "Feature Comparison", desc: "Architecture, processing, management, and ecosystem integration at a glance." },
     { tab: "takeaways", icon: "\uD83D\uDCA1", title: "Key Takeaways", desc: "Quick-reference insights for choosing the right vendor and model." },
     { tab: "healthcheck", icon: "\u2705", title: "Firewall Health Check", desc: "Interactive wizard with executive and technical reports, plus PDF export." },
+    { tab: "deployment-options", icon: "\u2699\uFE0F", title: "Deployment Options", desc: "Different deployment methods for Sophos Firewall and architecture overview." },
     { tab: "takedown", icon: "\uD83E\uDD4A", title: "Why Sophos", desc: "Head-to-head competitive positioning against every major rival." },
     { tab: "discovery", icon: "\uD83D\uDD0E", title: "Sales Discovery", desc: "Guided questions across the full Sophos networking portfolio." },
     { tab: "licensing", icon: "\uD83D\uDCDC", title: "Licensing Breakdown", desc: "Standard vs Xstream bundles, individual subs, and a la carte options." },
     { tab: "ha-guide", icon: "\u26A1", title: "HA Quoting Guide", desc: "Why Enhanced Support Plus matters and how to quote HA correctly." },
     { tab: "verticals", icon: "\uD83C\uDFEB", title: "Industry Verticals", desc: "Tailored Sophos positioning for education, finance, healthcare, and more." },
     { tab: "solution-map", icon: "\uD83D\uDDFA\uFE0F", title: "Solution Map", desc: "Build a recommended Sophos solution based on customer requirements." },
+    { tab: "workspace-protection", icon: "\uD83C\uDFE2", title: "Workspace Protection", desc: "Use cases and governance for Gen-AI and secure access.", new: true },
   ];
 
   let html = `
@@ -206,6 +231,7 @@ function renderOverviewHub() {
   for (const s of sections) {
     html += `
       <div class="hub-card" data-hub-tab="${s.tab}">
+        ${s.new ? '<span class="hub-card-new">New</span>' : ''}
         <div class="hub-icon">${s.icon}</div>
         <h3>${s.title}</h3>
         <p>${s.desc}</p>
@@ -219,6 +245,83 @@ function renderOverviewHub() {
   container.querySelectorAll("[data-hub-tab]").forEach((card) => {
     card.addEventListener("click", () => showTab(card.dataset.hubTab));
   });
+}
+
+// ── Deployment Options ──
+function renderDeploymentOptionsPage() {
+  const contentEl = document.getElementById("deployment-options-content");
+  const diagramEl = document.getElementById("deployment-options-diagram");
+  if (!contentEl || !diagramEl) return;
+
+  contentEl.innerHTML = `
+    <p>Sophos Firewall can be deployed in several ways to match your environment: standalone hardware, high-availability pairs, virtual machines, or in the cloud. All options can be managed from <strong>Sophos Central</strong> for a single pane of glass.</p>
+    <ul>
+      <li><strong>Standalone appliance</strong> — A single XGS hardware appliance for branch or small office.</li>
+      <li><strong>HA pair</strong> — Two XGS firewalls in active-passive or active-active for redundancy and zero-impact failover.</li>
+      <li><strong>Virtual</strong> — Sophos Firewall VM on Hyper-V, VMware, or other hypervisors for data centre or cloud.</li>
+      <li><strong>Cloud</strong> — Deploy in Azure, AWS, or other clouds as a virtual firewall for cloud-native or hybrid architectures.</li>
+    </ul>
+  `;
+
+  diagramEl.innerHTML = `
+    <svg class="deployment-arch-svg" viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" aria-label="Sophos Firewall deployment options">
+      <defs>
+        <linearGradient id="depGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:var(--accent);stop-opacity:0.15" />
+          <stop offset="100%" style="stop-color:var(--accent);stop-opacity:0.02" />
+        </linearGradient>
+      </defs>
+      <text x="360" y="28" text-anchor="middle" font-weight="600" font-size="14" fill="var(--text-muted)">Sophos Central (management)</text>
+      <ellipse cx="360" cy="50" rx="100" ry="18" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5" opacity="0.9"/>
+      <line x1="360" y1="68" x2="360" y2="95" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 2"/>
+      <line x1="360" y1="95" x2="120" y2="180" stroke="var(--border)" stroke-width="1"/>
+      <line x1="360" y1="95" x2="280" y2="180" stroke="var(--border)" stroke-width="1"/>
+      <line x1="360" y1="95" x2="440" y2="180" stroke="var(--border)" stroke-width="1"/>
+      <line x1="360" y1="95" x2="600" y2="180" stroke="var(--border)" stroke-width="1"/>
+      <rect x="40" y="160" width="160" height="100" rx="8" fill="url(#depGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="120" y="198" text-anchor="middle" font-weight="600" font-size="12" fill="var(--accent)">Standalone</text>
+      <text x="120" y="218" text-anchor="middle" font-size="11" fill="var(--text-muted)">Single XGS appliance</text>
+      <rect x="200" y="160" width="160" height="100" rx="8" fill="url(#depGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="280" y="198" text-anchor="middle" font-weight="600" font-size="12" fill="var(--accent)">HA Pair</text>
+      <text x="280" y="218" text-anchor="middle" font-size="11" fill="var(--text-muted)">Active-passive / active-active</text>
+      <rect x="360" y="160" width="160" height="100" rx="8" fill="url(#depGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="440" y="198" text-anchor="middle" font-weight="600" font-size="12" fill="var(--accent)">Virtual</text>
+      <text x="440" y="218" text-anchor="middle" font-size="11" fill="var(--text-muted)">VM (Hyper-V, VMware)</text>
+      <rect x="520" y="160" width="160" height="100" rx="8" fill="url(#depGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="600" y="198" text-anchor="middle" font-weight="600" font-size="12" fill="var(--accent)">Cloud</text>
+      <text x="600" y="218" text-anchor="middle" font-size="11" fill="var(--text-muted)">Azure, AWS, etc.</text>
+    </svg>
+  `;
+}
+
+// ── Workspace Protection ──
+function renderWorkspaceProtectionPage() {
+  const container = document.getElementById("workspace-protection-container");
+  if (!container) return;
+  const data = state.workspaceProtection;
+  if (!data || !data.intro) return;
+
+  let html = `<p class="wp-intro">${data.intro}</p>`;
+  if (data.use_cases && data.use_cases.length) {
+    html += '<h3>Use cases</h3>';
+    data.use_cases.forEach((uc) => {
+      html += `<div class="wp-use-case"><h4>${uc.title}</h4><p>${uc.description}</p></div>`;
+    });
+  }
+  if (data.gen_ai_governance) {
+    const g = data.gen_ai_governance;
+    html += `<div class="wp-genai"><h3>${g.title}</h3><p>${g.content}</p>`;
+    if (g.doc_url) html += `<p><a href="${g.doc_url}" target="_blank" rel="noopener">Gen-AI governance documentation</a></p>`;
+    html += "</div>";
+  }
+  if (data.resources && data.resources.length) {
+    html += '<h3>Resources</h3><ul class="wp-resources">';
+    data.resources.forEach((r) => {
+      html += `<li><a href="${r.url}" target="_blank" rel="noopener">${r.label}</a></li>`;
+    });
+    html += "</ul>";
+  }
+  container.innerHTML = html;
 }
 
 // ── Hardware tier tables ──

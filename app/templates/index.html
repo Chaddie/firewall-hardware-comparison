@@ -13,6 +13,7 @@
   <!-- Sticky header -->
   <header class="app-header">
     <div class="container header-inner">
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation menu">&#9776;</button>
       <div class="header-top-row">
         <div class="logo-group">
           <img class="sophos-logo" src="{{ url_for('static', filename='img/sophos-logo.png') }}" alt="Sophos" width="34" height="34" />
@@ -23,23 +24,31 @@
           <span class="theme-icon-moon">&#9790;</span>
         </button>
       </div>
-      <nav class="main-nav" aria-label="Main navigation">
-        <button class="active" data-tab="overview">Overview</button>
-        <button data-tab="hardware">Hardware Specs</button>
-        <button data-tab="features">Features</button>
-        <button data-tab="takeaways">Key Takeaways</button>
-        <button data-tab="healthcheck">Health Check</button>
-        <button data-tab="takedown" class="nav-sophos-btn">Why Sophos</button>
-        <button data-tab="discovery">Discovery</button>
-        <button data-tab="licensing">Licensing</button>
-        <button data-tab="ha-guide">HA Quoting</button>
-        <button data-tab="verticals">Verticals</button>
-        <button data-tab="solution-map">Solution Map</button>
-        <button data-tab="ask" class="nav-ai-btn">NSG AI</button>
-      </nav>
     </div>
   </header>
 
+  <div class="app-layout" id="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main navigation">
+      <nav class="sidebar-nav">
+        <button class="sidebar-item active" data-tab="overview">Overview</button>
+        <button class="sidebar-item" data-tab="hardware">Hardware Specs</button>
+        <button class="sidebar-item" data-tab="features">Features</button>
+        <button class="sidebar-item" data-tab="takeaways">Key Takeaways</button>
+        <div class="sidebar-group-label">Sales Engineering</div>
+        <button class="sidebar-item sidebar-item-indent" data-tab="healthcheck">Health Check</button>
+        <button class="sidebar-item sidebar-item-indent" data-tab="deployment-options">Deployment Options</button>
+        <button class="sidebar-item nav-sophos-btn" data-tab="takedown">Why Sophos</button>
+        <button class="sidebar-item" data-tab="discovery">Discovery</button>
+        <button class="sidebar-item" data-tab="licensing">Licensing</button>
+        <button class="sidebar-item" data-tab="ha-guide">HA Quoting</button>
+        <button class="sidebar-item" data-tab="verticals">Verticals</button>
+        <button class="sidebar-item" data-tab="solution-map">Solution Map</button>
+        <button class="sidebar-item" data-tab="workspace-protection">Workspace Protection</button>
+        <button class="sidebar-item nav-ai-btn" data-tab="ask">NSG AI</button>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+    <div class="app-content">
   <!-- Hero -->
   <section class="hero">
     <div class="container">
@@ -151,11 +160,32 @@
       <div id="solution-map-container"></div>
     </section>
 
+    <!-- Deployment Options -->
+    <section id="section-deployment-options" class="page-section">
+      <div class="section-head">
+        <h2>Deployment Options</h2>
+        <p>Different deployment methods for Sophos Firewall and how they fit your architecture.</p>
+      </div>
+      <div id="deployment-options-content"></div>
+      <div id="deployment-options-diagram" class="deployment-diagram"></div>
+    </section>
+
+    <!-- Workspace Protection -->
+    <section id="section-workspace-protection" class="page-section">
+      <div class="section-head">
+        <h2>Workspace Protection</h2>
+        <p>Use cases and governance for secure access, isolated browsing, and Gen-AI application control.</p>
+      </div>
+      <div id="workspace-protection-container"></div>
+    </section>
+
   </main>
 
   <footer class="app-footer">
     <p>Data is approximate and based on publicly available vendor datasheets as of early 2026. Always verify with the vendor for the latest specifications.</p>
   </footer>
+    </div><!-- .app-content -->
+  </div><!-- .app-layout -->
 
   <!-- Chat widget -->
   <button class="chat-fab" id="chat-fab" aria-label="Open NSG AI Assistant">&#x2728;</button>

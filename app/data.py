@@ -2002,3 +2002,34 @@ SOLUTION_MAP_DATA = {
         },
     },
 }
+
+WORKSPACE_PROTECTION_DATA = {
+    "intro": "Sophos Workspace Protection secures how users access applications and the internet from any device. It combines secure access (ZTNA), isolated browsing, DNS protection for endpoints, and governance for generative AI applications\u2014all manageable from Sophos Central.",
+    "use_cases": [
+        {
+            "title": "Secure access without VPN",
+            "description": "ZTNA (Zero Trust Network Access) gives users identity-based, per-application access to internal apps without exposing the network. Ideal for remote and hybrid workers, contractors, and replacing or supplementing legacy VPN.",
+        },
+        {
+            "title": "Isolated browsing",
+            "description": "Protected Browser runs risky or unapproved web activity in an isolated environment so malware and data exfiltration stay off the corporate device and network.",
+        },
+        {
+            "title": "DNS protection for endpoints",
+            "description": "DNS Protection for Endpoints blocks malicious and unwanted domains at the device level, with optional integration to Sophos Central for reporting and policy.",
+        },
+        {
+            "title": "Remote compliance and posture",
+            "description": "Ensure off-network devices meet security posture requirements before granting access to applications and data.",
+        },
+    ],
+    "gen_ai_governance": {
+        "title": "Governance of Gen-AI applications",
+        "content": "A primary use case for Workspace Protection is governing how generative AI (Gen-AI) applications are used across the organisation. Many teams now use ChatGPT, Copilot, and other Gen-AI tools for productivity\u2014but ungoverned use can lead to data leakage, policy violations, and compliance risk. Workspace Protection lets you see which Gen-AI applications are in use, enforce acceptable-use policies (allow, restrict, or block by application or category), and protect sensitive data from being sent to unapproved services. You can allow approved Gen-AI tools while blocking or isolating others, and align usage with data protection and compliance requirements.",
+        "doc_url": "https://docs.sophos.com/nsg/sophos-workspace-protection/help/en-us/workspace-protection/concepts/genai-governance.html",
+    },
+    "resources": [
+        {"label": "Workspace Protection documentation", "url": "https://docs.sophos.com/nsg/sophos-workspace-protection/help/en-us/workspace-protection/index.html"},
+        {"label": "Sophos Central", "url": "https://central.sophos.com"},
+    ],
+}
