@@ -11,6 +11,7 @@ from .data import (
     TAKEAWAYS,
     TAKEDOWN_DATA,
     VENDORS,
+    NETWORK_LAUNCH_DATA,
     VERTICALS_DATA,
     WORKSPACE_PROTECTION_DATA,
 )
@@ -88,3 +89,8 @@ def api_solution_map():
 @main.route("/api/workspace-protection")
 def api_workspace_protection():
     return jsonify(WORKSPACE_PROTECTION_DATA)
+
+
+@main.route("/api/network-launch")
+def api_network_launch():
+    return jsonify(NETWORK_LAUNCH_DATA)

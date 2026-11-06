@@ -30,6 +30,7 @@ const state = {
   smAnswers: {},
   smDone: false,
   workspaceProtection: {},
+  networkLaunch: {},
 };
 
 // ── Bootstrap ──
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderSolutionMapPage();
   renderDeploymentOptionsPage();
   renderWorkspaceProtectionPage();
+  renderNetworkLaunchPage();
   initChat();
   showTab("overview");
 });
@@ -69,7 +71,7 @@ function initTheme() {
 }
 
 async function loadData() {
-  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide, verticals, solutionMap, workspaceProtection] = await Promise.all([
+  const [vendors, hardware, features, takeaways, healthcheck, takedown, discovery, licensing, haGuide, verticals, solutionMap, workspaceProtection, networkLaunch] = await Promise.all([
     fetch("/api/vendors").then((r) => r.json()),
     fetch("/api/hardware").then((r) => r.json()),
     fetch("/api/features").then((r) => r.json()),
@@ -82,6 +84,7 @@ async function loadData() {
     fetch("/api/verticals").then((r) => r.json()),
     fetch("/api/solution-map").then((r) => r.json()),
     fetch("/api/workspace-protection").then((r) => r.json()),
+    fetch("/api/network-launch").then((r) => r.json()),
   ]);
   state.vendors = vendors;
   state.hardware = hardware;
@@ -95,6 +98,7 @@ async function loadData() {
   state.verticals = verticals;
   state.solutionMap = solutionMap;
   state.workspaceProtection = workspaceProtection;
+  state.networkLaunch = networkLaunch;
   Object.keys(vendors).forEach((v) => state.activeVendors.add(v));
 }
 
@@ -214,6 +218,7 @@ function renderOverviewHub() {
     { tab: "verticals", icon: "\uD83C\uDFEB", title: "Industry Verticals", desc: "Tailored Sophos positioning for education, finance, healthcare, and more." },
     { tab: "solution-map", icon: "\uD83D\uDDFA\uFE0F", title: "Solution Map", desc: "Build a recommended Sophos solution based on customer requirements." },
     { tab: "workspace-protection", icon: "\uD83C\uDFE2", title: "Workspace Protection", desc: "Use cases and governance for Gen-AI and secure access.", new: true },
+    { tab: "network-launch", icon: "\uD83D\uDE80", title: "Network launch resources", desc: "Pre-quote the four new XGS models and Xstream Plus ahead of the November 4 launch.", new: true },
   ];
 
   let html = `
@@ -321,6 +326,92 @@ function renderWorkspaceProtectionPage() {
     });
     html += "</ul>";
   }
+  container.innerHTML = html;
+}
+
+// ── Network launch resources ──
+function renderNetworkLaunchPage() {
+  const container = document.getElementById("network-launch-container");
+  if (!container) return;
+  const data = state.networkLaunch;
+  if (!data || !data.intro) return;
+
+  const esc = (value) => String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+  const alloc = data.allocation;
+  const models = data.models;
+  const cfraCol = alloc.columns[2];
+
+  let html = '<div class="launch-page">';
+
+  html += `<div class="launch-prose">${data.intro.map((p) => `<p>${esc(p)}</p>`).join("")}</div>`;
+  if (data.prequote && data.prequote.length) {
+    html += `<div class="launch-callout">${data.prequote.map((p) => `<p>${esc(p)}</p>`).join("")}</div>`;
+  }
+
+  html += `<h3>${esc(data.upsell.title)}</h3>`;
+  html += `<div class="launch-prose">${data.upsell.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("")}</div>`;
+
+  html += `<h3>${esc(data.included.title)}</h3>`;
+  html += `<p class="launch-lede">${esc(data.included.lede)}</p>`;
+  data.included.sections.forEach((sec) => {
+    html += `<article class="launch-include"><h4>${esc(sec.title)}</h4>`;
+    html += `<p class="launch-kicker">${esc(sec.subtitle)}</p>`;
+    if (sec.lead) html += `<p class="launch-lead">${esc(sec.lead)}</p>`;
+    html += "<ul>";
+    (sec.bullets || []).forEach((bullet) => {
+      html += `<li>${esc(bullet)}</li>`;
+    });
+    if (sec.link) {
+      html += `<li><a href="${esc(sec.link.url)}" target="_blank" rel="noopener">${esc(sec.link.label)}</a></li>`;
+    }
+    html += "</ul></article>";
+  });
+
+  html += `<h3>${esc(alloc.title)}</h3>`;
+  html += '<div class="launch-table-wrap"><table class="launch-table launch-alloc-table">';
+  html += "<thead><tr>";
+  alloc.columns.forEach((col) => {
+    const cls = col.numeric ? "num" : "";
+    html += `<th scope="col" class="${cls}">${esc(col.label)}`;
+    if (col.sub) html += `<span class="launch-col-sub">${esc(col.sub)}</span>`;
+    html += "</th>";
+  });
+  html += "</tr></thead><tbody>";
+  alloc.rows.forEach((row) => {
+    html += `<tr${row.group_start ? ' class="launch-group-start"' : ""}>`;
+    html += `<td data-label="${esc(alloc.columns[0].label)}">${esc(row.appliance)}</td>`;
+    html += `<td class="num" data-label="${esc(alloc.columns[1].label)}">${esc(row.workspace)}</td>`;
+    html += `<td class="num" data-label="${esc(cfraCol.data_label || cfraCol.label)}">${esc(row.cfra)}</td>`;
+    html += "</tr>";
+  });
+  html += "</tbody></table></div>";
+  html += `<p class="launch-footnote">${esc(alloc.footnote)}</p>`;
+
+  html += `<h3>${esc(models.title)}</h3>`;
+  html += `<p class="launch-note">${esc(models.throughput_note)}</p>`;
+  html += '<p class="launch-scroll-hint">Scroll sideways to see every column.</p>';
+  html += '<div class="launch-table-wrap launch-specs-wrap"><table class="launch-table launch-specs-table">';
+  html += "<thead><tr>";
+  models.columns.forEach((col) => {
+    html += `<th scope="col" class="${col.numeric ? "num" : ""}">${esc(col.label)}</th>`;
+  });
+  html += "</tr></thead><tbody>";
+  models.rows.forEach((row) => {
+    html += "<tr>";
+    models.columns.forEach((col) => {
+      html += `<td class="${col.numeric ? "num" : ""}" data-label="${esc(col.label)}">${esc(row[col.key])}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</tbody></table></div>";
+  html += `<p class="launch-note">${esc(models.wifi_note)}</p>`;
+
+  html += "</div>";
   container.innerHTML = html;
 }
 

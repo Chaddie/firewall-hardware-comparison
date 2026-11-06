@@ -2033,3 +2033,141 @@ WORKSPACE_PROTECTION_DATA = {
         {"label": "Sophos Central", "url": "https://central.sophos.com"},
     ],
 }
+
+NETWORK_LAUNCH_DATA = {
+    "intro": [
+        "With the November 4 Securing the AI-Era Network launch approaching, sales teams can now pre-quote the four new XGS models and Xstream Plus. The latest training is also available, giving you what you need to start identifying refresh, upsell, and cross-sell opportunities ahead of launch.",
+    ],
+    "prequote": [
+        "The new XGS 2380, 3380, 4580, and 5580 models and the new Xstream Plus bundle are now available for pre-quoting.",
+        "Create test quotes, explore pricing, and start building pipeline ahead of GA.",
+    ],
+    "upsell": {
+        "title": "Upsell Xstream Protection customers",
+        "paragraphs": [
+            "80% of Sophos Firewall customers globally already have Xstream Protection, creating a significant installed-base opportunity for Xstream Plus.",
+            "Xstream Plus adds Sophos Workspace Protection, Enhanced Plus Support, and up to one year of centralized reporting data retention in Sophos Fusion, while offering approximately 20% savings compared with purchasing the individual components separately.",
+        ],
+    },
+    "included": {
+        "title": "What is included with Xstream Plus",
+        "lede": "Additional capabilities vs. Xstream Protection.",
+        "sections": [
+            {
+                "title": "Sophos Workspace Protection",
+                "subtitle": "Protection for remote and hybrid workers",
+                "bullets": [
+                    "Includes a fixed allocation of Sophos Workspace Protection user licenses that varies by XGS hardware model or virtual/software license (see the allocation table).",
+                    "Sophos Workspace Protection includes: Sophos Protected Browser, Sophos ZTNA, Sophos DNS Protection for endpoints, Sophos Email Monitoring System.",
+                ],
+                "link": {"label": "See sophos.com/workspace", "url": "https://sophos.com/workspace"},
+            },
+            {
+                "title": "Store up to 1 year of reporting",
+                "subtitle": "Extended reporting data storage",
+                "bullets": [
+                    "The retention period for centralized reporting in Sophos Fusion is extended to up to 1 year (vs. the up to 30 days in Xstream Protection).",
+                    "One year is calculated based on average traffic volumes per appliance size. In high-traffic environments, the retention period can be lower.",
+                    "Longer retention periods are available for separate purchase.",
+                ],
+            },
+            {
+                "title": "Enhanced Plus support",
+                "subtitle": "Unlock advanced support options",
+                "lead": "An Enhanced to Enhanced Plus support upgrade provides:",
+                "bullets": [
+                    "Advanced RMA for the passive appliance in an Active-Passive HA cluster when purchased for the active unit",
+                    "Priority case and sample handling",
+                    "2\u20138 hours of remote consulting",
+                    "VIP access to Senior Technical Resource team",
+                    "Technical Account Manager (TAM) option (extra cost)",
+                ],
+            },
+        ],
+    },
+    "allocation": {
+        "title": "Xstream Plus license allocation by appliance",
+        "columns": [
+            {"label": "Appliance"},
+            {"label": "Workspace Protection user licenses", "numeric": True},
+            {
+                "label": "Centralized Firewall Reporting (CFRA) licenses",
+                "sub": "Sophos Fusion Centralized Firewall Reporting",
+                "data_label": "Centralized Firewall Reporting (CFRA) / Sophos Fusion Centralized Firewall Reporting licenses",
+                "numeric": True,
+            },
+        ],
+        "rows": [
+            {"appliance": "XGS 87/88(w), 107/108(w)", "workspace": "5", "cfra": "5"},
+            {"appliance": "XGS 116/118(w)", "workspace": "5", "cfra": "10"},
+            {"appliance": "XGS 126/128(w), 136(w)/138", "workspace": "10", "cfra": "10"},
+            {"appliance": "XGS 2100, 2300, 3100", "workspace": "25", "cfra": "10"},
+            {"appliance": "XGS 2380, 3300, 3380, 4300, 4500", "workspace": "100", "cfra": "20"},
+            {"appliance": "XGS 4580, 5500, 5580, 6500", "workspace": "300", "cfra": "50"},
+            {"appliance": "XGS 7500, 8500", "workspace": "500", "cfra": "100"},
+            {"appliance": "Virtual/SW: 1 or 2 cores", "workspace": "5", "cfra": "5", "group_start": True},
+            {"appliance": "Virtual/SW: 4 cores", "workspace": "5", "cfra": "10"},
+            {"appliance": "Virtual/SW: 6 or 8 cores", "workspace": "25", "cfra": "10"},
+            {"appliance": "Virtual/SW: 16 cores", "workspace": "100", "cfra": "20"},
+            {"appliance": "Virtual/SW: Unlimited cores", "workspace": "300", "cfra": "50"},
+        ],
+        "footnote": "Licensing retention allocations are provided for up to one year based on average traffic volumes per appliance size. Each license represents a storage block of 100 GB. In high-traffic environments, the retention period can be shorter.",
+    },
+    "models": {
+        "title": "New XGS models (pre-quote)",
+        "throughput_note": "Throughput is in Gbps, except the Xstream SSL/TLS column. Ports are shown as fixed ports / slots (maximum ports).",
+        "wifi_note": "Wi-Fi is n/a on these four models. Desktop Gen.2 w-models are Wi-Fi 6; these new models are not.",
+        "columns": [
+            {"key": "model", "label": "Model"},
+            {"key": "form_factor", "label": "Form factor"},
+            {"key": "ports", "label": "Ports/Slots (Max Ports)"},
+            {"key": "swappable", "label": "Swappable components"},
+            {"key": "firewall", "label": "Firewall (Gbps)", "numeric": True},
+            {"key": "ipsec", "label": "IPsec VPN (Gbps)", "numeric": True},
+            {"key": "threat", "label": "Threat Protection (Gbps)", "numeric": True},
+            {"key": "ssl", "label": "Xstream SSL/TLS", "numeric": True},
+        ],
+        "rows": [
+            {
+                "model": "XGS 2380",
+                "form_factor": "1U Short",
+                "ports": "12/1 (20)",
+                "swappable": "Optional: internal power supply. Field-replaceable SSD for RMA",
+                "firewall": "59.8",
+                "ipsec": "48.5",
+                "threat": "23.3",
+                "ssl": "8.0",
+            },
+            {
+                "model": "XGS 3380",
+                "form_factor": "1U Short",
+                "ports": "12/1 (20)",
+                "swappable": "Optional: internal power supply. Field-replaceable SSD for RMA",
+                "firewall": "80.0",
+                "ipsec": "74.0",
+                "threat": "32.0",
+                "ssl": "9.5",
+            },
+            {
+                "model": "XGS 4580",
+                "form_factor": "1U Long",
+                "ports": "12/2 (28)",
+                "swappable": "Optional: internal power supply. Field-replaceable SSDs for RMA",
+                "firewall": "105.0",
+                "ipsec": "97.0",
+                "threat": "45.0",
+                "ssl": "12.0",
+            },
+            {
+                "model": "XGS 5580",
+                "form_factor": "1U Long",
+                "ports": "12/2 (28)",
+                "swappable": "Included: internal power supply. Field-replaceable SSDs for RMA",
+                "firewall": "112.5",
+                "ipsec": "105.0",
+                "threat": "58.0",
+                "ssl": "16.0",
+            },
+        ],
+    },
+}
