@@ -206,6 +206,7 @@ function renderOverviewHub() {
   if (!container) return;
 
   const sections = [
+    { tab: "network-launch", icon: "\uD83D\uDE80", title: "Network launch resources", desc: "Pre-quote the four new XGS models and Xstream Plus ahead of the November 4 launch.", new: true },
     { tab: "hardware", icon: "\uD83D\uDCBB", title: "Hardware Specs", desc: "Side-by-side hardware comparison across all major firewall vendors." },
     { tab: "features", icon: "\uD83D\uDD0D", title: "Feature Comparison", desc: "Architecture, processing, management, and ecosystem integration at a glance." },
     { tab: "takeaways", icon: "\uD83D\uDCA1", title: "Key Takeaways", desc: "Quick-reference insights for choosing the right vendor and model." },
@@ -218,7 +219,6 @@ function renderOverviewHub() {
     { tab: "verticals", icon: "\uD83C\uDFEB", title: "Industry Verticals", desc: "Tailored Sophos positioning for education, finance, healthcare, and more." },
     { tab: "solution-map", icon: "\uD83D\uDDFA\uFE0F", title: "Solution Map", desc: "Build a recommended Sophos solution based on customer requirements." },
     { tab: "workspace-protection", icon: "\uD83C\uDFE2", title: "Workspace Protection", desc: "Use cases and governance for Gen-AI and secure access.", new: true },
-    { tab: "network-launch", icon: "\uD83D\uDE80", title: "Network launch resources", desc: "Pre-quote the four new XGS models and Xstream Plus ahead of the November 4 launch.", new: true },
   ];
 
   let html = `
