@@ -765,6 +765,72 @@ tbody tr.dimmed { opacity: .15 }
   background: rgba(139,143,164,.12);
   border-color: var(--text-muted);
 }
+.wizard-answers .btn-yes.is-selected {
+  background: rgba(81,207,102,.22);
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 0 2px rgba(81,207,102,.35);
+}
+.wizard-answers .btn-no.is-selected {
+  background: rgba(255,107,107,.18);
+  border-color: var(--red);
+  color: var(--red);
+  box-shadow: 0 0 0 2px rgba(255,107,107,.3);
+}
+.wizard-answers .btn-na.is-selected {
+  background: rgba(139,143,164,.18);
+  border-color: var(--text-muted);
+  color: var(--text);
+  box-shadow: 0 0 0 2px rgba(139,143,164,.35);
+}
+
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: 1.25rem;
+}
+.wizard-nav-btn {
+  flex: 1;
+  min-width: 0;
+  padding: .65rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.wizard-nav-back:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(0,91,172,.12);
+}
+.wizard-nav-back:hover:not(:disabled) {
+  background: rgba(0,91,172,.22);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.wizard-nav-forward:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.wizard-nav-forward:hover:not(:disabled) {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,91,172,.35);
+}
+.wizard-nav-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
 
 /* Start / restart button */
 .wizard-start {
@@ -1732,6 +1798,8 @@ tbody tr.dimmed { opacity: .15 }
   .compare-col:first-child { border-right: none; border-bottom: 1px solid var(--border) }
   .wizard-answers { flex-direction: column }
   .wizard-answers button { width: 100% }
+  .wizard-nav { gap: .5rem }
+  .wizard-nav-btn { padding: .7rem .5rem; font-size: .9rem }
 }
 
 /* ── Licensing Page ── */

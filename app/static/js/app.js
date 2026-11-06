@@ -593,6 +593,29 @@ function advanceToNextApplicable(fromIndex) {
   return idx;
 }
 
+function previousApplicableIndex(fromIndex) {
+  const questions = state.healthcheck.questions;
+  let idx = fromIndex - 1;
+  while (idx >= 0 && !isQuestionApplicable(questions[idx])) {
+    idx--;
+  }
+  return idx;
+}
+
+function pruneInapplicableAnswers() {
+  const questions = state.healthcheck.questions;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const q of questions) {
+      if (!isQuestionApplicable(q) && q.id in state.hcAnswers) {
+        delete state.hcAnswers[q.id];
+        changed = true;
+      }
+    }
+  }
+}
+
 function renderWizardStep() {
   const container = document.getElementById("hc-wizard");
   const questions = state.healthcheck.questions;
@@ -609,6 +632,16 @@ function renderWizardStep() {
   const activeIdx = activeQs.indexOf(q);
   const activeTotal = activeQs.length;
   const pct = (activeIdx / activeTotal) * 100;
+  const chosen = state.hcAnswers[q.id];
+  const prevIdx = previousApplicableIndex(state.hcStep);
+  const nextIdx = advanceToNextApplicable(state.hcStep + 1);
+  const canGoBack = prevIdx >= 0;
+  const canGoForward = nextIdx < questions.length && questions[nextIdx].id in state.hcAnswers;
+
+  const answerButton = (value, label, cls) => {
+    const selected = chosen === value;
+    return `<button type="button" class="${cls}${selected ? " is-selected" : ""}" data-answer="${value}" aria-pressed="${selected ? "true" : "false"}">${label}</button>`;
+  };
 
   container.innerHTML = `
     <div class="wizard-container">
@@ -626,9 +659,13 @@ function renderWizardStep() {
         <h3>${q.question}${q.ui_nav ? `<span class="wizard-tooltip-wrap"><span class="wizard-tooltip-icon" tabindex="0">&#9432;</span><span class="wizard-tooltip"><strong>Where to find this:</strong><br>${q.ui_nav}</span></span>` : ""}</h3>
         <p class="wizard-context">${q.context}</p>
         <div class="wizard-answers">
-          <button class="btn-yes" data-answer="yes">Yes</button>
-          <button class="btn-no" data-answer="no">No</button>
-          <button class="btn-na" data-answer="na">N/A</button>
+          ${answerButton("yes", "Yes", "btn-yes")}
+          ${answerButton("no", "No", "btn-no")}
+          ${answerButton("na", "N/A", "btn-na")}
+        </div>
+        <div class="wizard-nav">
+          <button type="button" class="wizard-nav-btn wizard-nav-back" id="hc-back-btn"${canGoBack ? "" : " disabled"}>&#8592; Back</button>
+          <button type="button" class="wizard-nav-btn wizard-nav-forward" id="hc-forward-btn"${canGoForward ? "" : " disabled"}>Forward &#8594;</button>
         </div>
       </div>
     </div>
@@ -637,9 +674,24 @@ function renderWizardStep() {
   container.querySelectorAll(".wizard-answers button").forEach((btn) => {
     btn.addEventListener("click", () => {
       state.hcAnswers[q.id] = btn.dataset.answer;
+      pruneInapplicableAnswers();
       state.hcStep++;
       renderWizardStep();
     });
+  });
+
+  document.getElementById("hc-back-btn").addEventListener("click", () => {
+    const prev = previousApplicableIndex(state.hcStep);
+    if (prev < 0) return;
+    state.hcStep = prev;
+    renderWizardStep();
+  });
+
+  document.getElementById("hc-forward-btn").addEventListener("click", () => {
+    const next = advanceToNextApplicable(state.hcStep + 1);
+    if (next >= questions.length || !(questions[next].id in state.hcAnswers)) return;
+    state.hcStep = next;
+    renderWizardStep();
   });
 }
 
