@@ -127,6 +127,7 @@ body {
   gap: .15rem;
   padding: 0 .5rem;
 }
+.sidebar-item[data-tab="network-launch"] { white-space: normal; line-height: 1.35; }
 .sidebar-item {
   display: block;
   width: 100%;
@@ -2060,6 +2061,245 @@ tbody tr.dimmed { opacity: .15 }
   gap: .4rem;
 }
 .btn-pdf:hover { background: var(--accent); color: #fff; }
+
+/* ══════════════════════════════════════
+   NETWORK LAUNCH RESOURCES
+   ══════════════════════════════════════ */
+main:has(#section-network-launch.active) {
+  min-width: 0;
+  width: 100%;
+}
+.launch-page,
+#section-network-launch {
+  min-width: 0;
+  max-width: 100%;
+}
+.launch-page h3 {
+  font-size: 1.2rem;
+  margin: 2rem 0 .75rem;
+}
+.launch-lede {
+  color: var(--text-muted);
+  font-size: .92rem;
+  margin: -.25rem 0 1rem;
+}
+.launch-prose p {
+  font-size: .95rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin-bottom: .85rem;
+}
+.launch-prose p:last-child { margin-bottom: 0; }
+.launch-callout {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  margin: 1rem 0 0;
+}
+.launch-callout p {
+  font-size: .95rem;
+  line-height: 1.65;
+  color: var(--text);
+  margin-bottom: .55rem;
+}
+.launch-callout p:last-child { margin-bottom: 0; }
+.launch-include {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 1rem;
+}
+.launch-include h4 {
+  font-size: 1.05rem;
+  margin-bottom: .2rem;
+  color: var(--accent);
+}
+.launch-kicker {
+  font-size: .88rem;
+  color: var(--text-muted);
+  margin-bottom: .75rem;
+}
+.launch-lead {
+  font-size: .9rem;
+  line-height: 1.55;
+  margin-bottom: .55rem;
+}
+.launch-include ul { margin: 0; padding-left: 1.15rem; }
+.launch-include li {
+  font-size: .9rem;
+  line-height: 1.55;
+  margin-bottom: .4rem;
+}
+.launch-include li::marker { color: var(--accent); }
+.launch-include a { color: var(--accent); }
+.launch-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: .25rem 0 .5rem;
+  background: var(--surface);
+}
+.launch-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+.launch-table th {
+  position: static;
+  top: auto;
+  background: var(--surface-alt);
+  padding: .75rem .85rem;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: bottom;
+  line-height: 1.35;
+}
+.launch-col-sub {
+  display: block;
+  margin-top: .25rem;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.launch-table td {
+  padding: .7rem .85rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .88rem;
+  vertical-align: top;
+  line-height: 1.45;
+}
+.launch-table tbody tr:last-child td { border-bottom: none; }
+.launch-table tbody tr:hover { background: rgba(0,91,172,.04); }
+.launch-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.launch-specs-table th.num {
+  text-align: right;
+  white-space: nowrap;
+}
+.launch-alloc-table { table-layout: fixed; }
+.launch-alloc-table th:first-child,
+.launch-alloc-table td:first-child { width: 46%; }
+.launch-alloc-table th:nth-child(2),
+.launch-alloc-table td:nth-child(2) { width: 24%; }
+.launch-alloc-table th:nth-child(3),
+.launch-alloc-table td:nth-child(3) { width: 30%; }
+.launch-alloc-table tr.launch-group-start td { border-top: 2px solid var(--accent); }
+.launch-specs-table { min-width: 920px; }
+.launch-specs-table th:nth-child(4),
+.launch-specs-table td:nth-child(4) { min-width: 220px; }
+.launch-specs-table th:first-child,
+.launch-specs-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--border);
+  white-space: nowrap;
+}
+.launch-specs-table thead th:first-child {
+  z-index: 2;
+  background: var(--surface-alt);
+}
+.launch-specs-table tbody tr:hover td:first-child { background: var(--surface-alt); }
+.launch-footnote,
+.launch-note,
+.launch-scroll-hint {
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: .55rem 0 0;
+}
+.launch-scroll-hint { display: none; }
+@media (max-width: 1200px) {
+  .launch-scroll-hint { display: block; }
+}
+@media (max-width: 768px) {
+  .launch-scroll-hint { display: none; }
+  .launch-table-wrap {
+    overflow: visible;
+    border: none;
+    background: transparent;
+  }
+  .launch-table,
+  .launch-specs-table {
+    min-width: 0;
+    table-layout: auto;
+  }
+  .launch-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .launch-table,
+  .launch-table tbody,
+  .launch-table tr,
+  .launch-table td {
+    display: block;
+    width: 100% !important;
+    min-width: 0;
+  }
+  .launch-table tr {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: .75rem;
+    padding: .15rem 0;
+  }
+  .launch-table tr.launch-group-start { margin-top: 1.15rem; }
+  .launch-alloc-table tr.launch-group-start td { border-top: none; }
+  .launch-table td,
+  .launch-table td.num {
+    border-bottom: 1px solid var(--border);
+    padding: .6rem .9rem;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .launch-table td::before {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .launch-table tr td:last-child { border-bottom: none; }
+  .launch-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: .15rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: none;
+    color: var(--text-muted);
+  }
+  .launch-table th.num,
+  .launch-table td.num { text-align: left; }
+  .launch-specs-table th:first-child,
+  .launch-specs-table td:first-child,
+  .launch-specs-table thead th:first-child {
+    position: static;
+    box-shadow: none;
+    background: transparent;
+  }
+  .launch-specs-table td:first-child {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1rem;
+  }
+}
 
 @media (max-width: 768px) {
   .lic-bundles { grid-template-columns: 1fr; }
